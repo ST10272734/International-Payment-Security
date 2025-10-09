@@ -29,12 +29,12 @@ jobs:
 
       #  Install backend dependencies
       - name: Install backend dependencies
-        working-directory: ./backend
+        working-directory: ./Backend
         run: npm install
 
       #  Run backend lint and tests (if tests exist)
       - name: Run backend tests
-        working-directory: ./backend
+        working-directory: ./Backend
         run: |
           echo "Running backend tests..."
           npm test || echo "No backend tests defined."
