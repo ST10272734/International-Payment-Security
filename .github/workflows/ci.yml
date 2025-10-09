@@ -49,16 +49,16 @@ jobs:
 
       # ---------------- FRONTEND ----------------
       - name: Install frontend dependencies
-        working-directory: ./Frontend
+        working-directory: ./frontend
         run: npm install
 
       # ✅ Disable CI=true to prevent ESLint warnings from failing build
       - name: Build frontend (ignore lint warnings)
-        working-directory: ./Frontend
+        working-directory: ./frontend
         run: CI=false npm run build
 
       - name: Test frontend (optional)
-        working-directory: ./Frontend
+        working-directory: ./frontend
         run: |
           if [ -f package.json ]; then
             CI=false npm test || echo "Frontend tests skipped or failed (non-fatal)."
