@@ -34,7 +34,7 @@ jobs:
         run: npm install
 
       - name: Minimal backend test
-        working-directory: ./backend
+        working-directory: ./Backend
         run: |
           echo "✅ Backend installation successful."
           node -e "console.log('Backend sanity check passed')"
