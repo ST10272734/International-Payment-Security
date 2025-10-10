@@ -53,13 +53,13 @@ export default function MakePayment() {
         }
 
         if (!payeeAccountNumberRegex.test(payeeAccountNumber)) {
-            setMessage('Invalid account number.')
+            setMessage('Account numbers must be between 9 and 12 digits.')
             setErrorField('payeeAccountNumber')
             return
         }
 
         if (!swiftCodeRegex.test(swiftCode)) {
-            setMessage('Invalid SWIFT code.')
+            setMessage('Must follow a of the format AAAAA111 or AAAAA111XXX.')
             setErrorField('swiftCode')
             return
         }
