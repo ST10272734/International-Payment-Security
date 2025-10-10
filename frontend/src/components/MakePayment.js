@@ -38,6 +38,7 @@ export default function MakePayment() {
         const payeeAccountNumberRegex = /^\d{9,12}$/
         const swiftCodeRegex = /^[A-Za-z0-9]{8,11}$/
 
+        //Validating user input
         if (!amountRegex.test(amount)) {
             setMessage('Invalid amount.')
             setErrorField('amount')
@@ -59,6 +60,18 @@ export default function MakePayment() {
         if (!swiftCodeRegex.test(swiftCode)) {
             setMessage('Invalid SWIFT code.')
             setErrorField('swiftCode')
+            return
+        }
+
+        if (!currency) {
+            setMessage('Select a currency.')
+            setErrorField('currency')
+            return
+        }
+
+        if (!provider) {
+            setMessage('Select a provider.')
+            setErrorField('provider')
             return
         }
 
@@ -107,17 +120,28 @@ export default function MakePayment() {
             {/* Header */}
             <h1
                 style={{
-                    marginBottom: '30px',
+                    marginBottom: '10px',
                     fontSize: '2.5rem',
                     fontWeight: 'bold',
                     color: '#f0f6fc',
                     borderBottom: '2px solid #30363d',
-                    paddingBottom: '10px',
                     textAlign: 'center',
                 }}
             >
-                Submit Payment
+                Submit New Payment Request
             </h1>
+
+            <h2
+                style={{
+                    marginBottom: '30px',
+                    fontSize: '1rem',
+                    fontWeight: '400',
+                    color: '#c9d1d9',
+                    textAlign: 'center',
+                }}
+            >
+                Your payment will be submitted for verification before being submitted to SWIFT.
+            </h2>
 
             {/* Payment Form */}
             <form
@@ -183,6 +207,11 @@ export default function MakePayment() {
                         <option value="ZAR">ZAR - South African Rand</option>
                         <option value="GBP">GBP - Great British Pound</option>
                     </select>
+                    {errorField === 'currency' && (
+                        <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+                            {message}
+                        </span>
+                    )}
                 </div>
 
                 {/* Payment Provider */}
@@ -198,6 +227,11 @@ export default function MakePayment() {
                         />
                         SWIFT
                     </label>
+                    {errorField === 'provider' && (
+                        <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+                            {message}
+                        </span>
+                    )}
                 </div>
 
                 {/* Payee Name */}
@@ -304,7 +338,6 @@ export default function MakePayment() {
                     onClick={handleLogout}
                     style={{
                         padding: '12px',
-                        marginTop: '10px',
                         borderRadius: '8px',
                         border: 'none',
                         backgroundColor: '#dc3545',
