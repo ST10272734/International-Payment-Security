@@ -46,6 +46,18 @@ export default function MakePayment() {
             return
         }
 
+        if (!currency) {
+            setMessage('Select a currency.')
+            setErrorField('currency')
+            return
+        }
+
+        if (!provider) {
+            setMessage('Select a provider.')
+            setErrorField('provider')
+            return
+        }
+
         if (!payeeNameRegex.test(payeeName)) {
             setMessage('Invalid name.')
             setErrorField('payeeName')
@@ -61,18 +73,6 @@ export default function MakePayment() {
         if (!swiftCodeRegex.test(swiftCode)) {
             setMessage('Must follow a of the format AAAAA111 or AAAAA111XXX.')
             setErrorField('swiftCode')
-            return
-        }
-
-        if (!currency) {
-            setMessage('Select a currency.')
-            setErrorField('currency')
-            return
-        }
-
-        if (!provider) {
-            setMessage('Select a provider.')
-            setErrorField('provider')
             return
         }
 

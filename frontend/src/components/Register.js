@@ -42,12 +42,6 @@ export default function Register() {
       return
     }
 
-    if (!passwordRegex.test(password)) {
-      setMessage('Password must be a minimum of 8 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character.')
-      setErrorField('password')
-      return
-    }
-
     if (!idRegex.test(idNumber)) {
       setMessage('Invalid ID number.')
       setErrorField('idNumber')
@@ -57,6 +51,12 @@ export default function Register() {
     if (!accountRegex.test(accountNumber)) {
       setMessage('Valid account numbers are between 9 and 12 digits long.')
       setErrorField('accountNumber')
+      return
+    }
+
+    if (!passwordRegex.test(password)) {
+      setMessage('Password must be a minimum of 8 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character.')
+      setErrorField('password')
       return
     }
 
