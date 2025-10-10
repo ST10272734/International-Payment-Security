@@ -30,7 +30,7 @@ jobs:
 
       # ---------------- BACKEND ----------------
       - name: Install backend dependencies
-        working-directory: ./backend
+        working-directory: ./Backend
         run: npm install
 
       - name: Minimal backend test
