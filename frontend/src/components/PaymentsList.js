@@ -125,22 +125,47 @@ export default function PaymentsList() {
                 <td style={{ padding: '8px', border: '1px solid #30363d', textAlign: 'center', verticalAlign: 'middle' }}>{payment.payeeAccountNumber}</td>
                 <td style={{ padding: '8px', border: '1px solid #30363d', textAlign: 'center', verticalAlign: 'middle' }}>{payment.swiftCode}</td>
                 <td style={{ padding: '8px', border: '1px solid #30363d', textAlign: 'center', verticalAlign: 'middle' }}>{payment.status}</td>
-                <td style={{ padding: '8px', border: '1px solid #30363d', display: 'flex', justifyContent: 'center', gap: '5px', verticalAlign: 'middle' }}>
+                <td
+                  style={{
+                    padding: '8px',
+                    border: '1px solid #30363d',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    gap: '5px',
+                    verticalAlign: 'middle',
+                  }}
+                >
                   {payment.status === 'Pending' && (
-                    <button
-                      onClick={() => updateStatus(payment._id, 'Verified')}
-                      style={{
-                        padding: '5px 10px',
-                        borderRadius: '5px',
-                        backgroundColor: '#28a745',
-                        color: '#fff',
-                        border: 'none',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Verify
-                    </button>
+                    <>
+                      <button
+                        onClick={() => updateStatus(payment._id, 'Verified')}
+                        style={{
+                          padding: '5px 10px',
+                          borderRadius: '5px',
+                          backgroundColor: '#28a745',
+                          color: '#fff',
+                          border: 'none',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Verify
+                      </button>
+                      <button
+                        onClick={() => updateStatus(payment._id, 'Rejected')}
+                        style={{
+                          padding: '5px 10px',
+                          borderRadius: '5px',
+                          backgroundColor: '#dc3545',
+                          color: '#fff',
+                          border: 'none',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Reject
+                      </button>
+                    </>
                   )}
+
                   {payment.status === 'Verified' && (
                     <button
                       onClick={() => updateStatus(payment._id, 'Submitted')}
