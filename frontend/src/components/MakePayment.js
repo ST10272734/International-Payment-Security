@@ -221,7 +221,7 @@ export default function MakePayment() {
                     <label style={{ color: '#f0f6fc' }}>
                         <input
                             type="radio"
-                            value="swift"
+                            value="SWIFT"
                             checked={provider === 'swift'}
                             onChange={(e) => setProvider(e.target.value)}
                             style={{ marginRight: '8px' }}
