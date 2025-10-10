@@ -10,6 +10,7 @@
     "cookie-parser": "^1.4.7",
     "csurf": "^1.11.0",
     "express-session": "^1.18.2",
+    "dompurify": "^3.2.7",
     "helmet": "^8.1.0",
     "web-vitals": "^2.1.4",
     "react": "^18.2.0",
