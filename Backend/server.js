@@ -72,6 +72,29 @@ server.listen(port, () => {
 })
 
 /*
+  MVC Architecture:
+  1. https://dev.to/inam003/how-to-create-a-restful-api-with-nodejs-express-and-mongodb-using-mvc-pattern-218
+  2. https://medium.com/analytics-vidhya/implementation-of-mvc-rest-apis-in-expressjs-c7eb6a097b9f
+  3. https://medium.com/weekly-webtips/building-restful-apis-with-node-js-and-express-a9f648219f5b
+  4. https://cheatsheetseries.owasp.org/cheatsheets/Clickjacking\_Defense\_Cheat\_Sheet.html
+  5. https://youtu.be/Dco1gzVZKVk?si=DrPoryzK9KVXehAT
+
+  Driver functions:
+  1. https://www.mongodb.com/docs/drivers/node/current/crud/  
+
+  SSL:
+  1. https://create-react-app.dev/docs/using-https-in-development/
+  2. https://www.freecodecamp.org/news/how-to-set-up-https-locally-with-create-react-app/
+  3. https://www.youtube.com/watch?v=I-jULfZRejU
+
+  Hashing and salting:
+  1. https://medium.com/%40jogikrunal9477/securing-passwords-in-node-js-the-argon2-way-46303b279097
+  2. https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#argon2id
+  3. https://medium.com/@mpreziuso/password-hashing-pbkdf2-scrypt-bcrypt-and-argon2-e25aaf41598e
+*/
+
+
+/*
 Security references used for implementing protection techniques:
 
 Clickjacking prevention (headers, CSP, and frame busting):

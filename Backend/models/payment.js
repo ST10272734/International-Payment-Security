@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 import { client } from '../db/db.js'
 
-const db = client.db('Test')
+const db = client.db('PaymentPortal')
 const paymentsCollection = db.collection('Payments')
 
 //Creating new payment profile

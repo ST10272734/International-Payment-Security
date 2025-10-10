@@ -10,7 +10,8 @@ export default function Register() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
-  
+  const [errorField, setErrorField] = useState('')
+
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
@@ -21,7 +22,6 @@ export default function Register() {
     const cleanIdNumber = DOMPurify.sanitize(idNumber)
     const cleanAccountNumber = DOMPurify.sanitize(accountNumber)
     const cleanEmail = DOMPurify.sanitize(email)
-    const cleanPassword = DOMPurify.sanitize(password)
 
     //Regex patterns for frontend validation
     const nameRegex = /^[A-Za-z\s-]+$/
@@ -32,37 +32,42 @@ export default function Register() {
 
     if (!nameRegex.test(fullName)) {
       setMessage('Names may only contain letters and hyphens.')
+      setErrorField('fullName')
       return
     }
 
     if (!emailRegex.test(email)) {
       setMessage('Invalid email format.')
+      setErrorField('email')
       return
     }
 
     if (!passwordRegex.test(password)) {
       setMessage('Password must be a minimum of 8 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character.')
+      setErrorField('password')
       return
     }
 
     if (!idRegex.test(idNumber)) {
       setMessage('Invalid ID number.')
+      setErrorField('idNumber')
       return
     }
 
     if (!accountRegex.test(accountNumber)) {
       setMessage('Valid account numbers are between 9 and 12 digits long.')
+      setErrorField('accountNumber')
       return
     }
 
     try {
       const response = await axios.post('https://localhost:2000/customers/register',
         {
-          cleanFullName,
-          cleanIdNumber,
-          cleanAccountNumber,
-          cleanEmail,
-          cleanPassword
+          fullName: cleanFullName,
+          idNumber: cleanIdNumber,
+          accountNumber: cleanAccountNumber,
+          email: cleanEmail,
+          password
         })
 
       navigate('/login-customer')
@@ -79,101 +84,244 @@ export default function Register() {
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '100vh',
-      fontFamily: 'Arial, sans-serif',
-      backgroundColor: '#f5f5f5',
-      padding: '20px'
-    }}>
-      <h1 style={{ marginBottom: '30px', color: '#333' }}>Register</h1>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        fontFamily: 'Arial, sans-serif',
+        background: 'linear-gradient(135deg, #0d1117, #161b22)',
+        color: '#f0f6fc',
+        padding: '20px',
+      }}
+    >
+      {/* Header */}
+      <h1
+        style={{
+          fontSize: '2.5rem',
+          fontWeight: 'bold',
+          color: '#f0f6fc',
+          borderBottom: '2px solid #30363d',
+          textAlign: 'center',
+          margin: 0
+        }}
+      >
+        Register
+      </h1>
 
+      <h2
+        style={{
+          marginBottom: '30px',
+          fontSize: '1rem',
+          fontWeight: '400',
+          color: '#c9d1d9',
+          textAlign: 'center',
+        }}
+      >
+        Provide the required details below.
+      </h2>
+
+      {/* Registration Form */}
       <form
         onSubmit={handleSubmit}
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '15px',
-          backgroundColor: '#fff',
+          gap: '20px',
+          backgroundColor: '#161b22',
           padding: '30px',
-          borderRadius: '8px',
-          boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+          borderRadius: '12px',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
           width: '100%',
-          maxWidth: '400px'
+          maxWidth: '400px',
         }}
       >
-        <input
-          type="text"
-          placeholder="John Doe"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-          required
-          style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '16px' }}
-        />
+        {/* Full Name */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <label style={{ marginBottom: '5px', color: '#c9d1d9', fontWeight: '500' }}>
+            Full Name
+          </label>
+          <input
+            type="text"
+            placeholder="John Doe"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            required
+            style={{
+              padding: '12px',
+              borderRadius: '8px',
+              border: '1px solid #30363d',
+              backgroundColor: '#0d1117',
+              color: '#f0f6fc',
+              fontSize: '1rem',
+            }}
+          />
+          {errorField === 'fullName' && (
+            <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+              {message}
+            </span>
+          )}
+        </div>
 
-        <input
-          type="email"
-          placeholder="example@email.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '16px' }}
-        />
+        {/* Email */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <label style={{ marginBottom: '5px', color: '#c9d1d9', fontWeight: '500' }}>
+            Email Address
+          </label>
+          <input
+            type="email"
+            placeholder="example@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            style={{
+              padding: '12px',
+              borderRadius: '8px',
+              border: '1px solid #30363d',
+              backgroundColor: '#0d1117',
+              color: '#f0f6fc',
+              fontSize: '1rem',
+            }}
+          />
+          {errorField === 'email' && (
+            <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+              {message}
+            </span>
+          )}
+        </div>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '16px' }}
-        />
+        {/* ID Number */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <label style={{ marginBottom: '5px', color: '#c9d1d9', fontWeight: '500' }}>
+            ID Number
+          </label>
+          <input
+            type="text"
+            placeholder="13-digit South African ID number"
+            value={idNumber}
+            onChange={(e) => setIdNumber(e.target.value)}
+            required
+            style={{
+              padding: '12px',
+              borderRadius: '8px',
+              border: '1px solid #30363d',
+              backgroundColor: '#0d1117',
+              color: '#f0f6fc',
+              fontSize: '1rem',
+            }}
+          />
+          {errorField === 'idNumber' && (
+            <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+              {message}
+            </span>
+          )}
+        </div>
 
-        <input
-          type="text"
-          placeholder="ID Number"
-          value={idNumber}
-          onChange={(e) => setIdNumber(e.target.value)}
-          required
-          style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '16px' }}
-        />
+        {/* Account Number */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <label style={{ marginBottom: '5px', color: '#c9d1d9', fontWeight: '500' }}>
+            Account Number
+          </label>
+          <input
+            type="text"
+            placeholder="9-12 digit account number"
+            value={accountNumber}
+            onChange={(e) => setAccountNumber(e.target.value)}
+            required
+            style={{
+              padding: '12px',
+              borderRadius: '8px',
+              border: '1px solid #30363d',
+              backgroundColor: '#0d1117',
+              color: '#f0f6fc',
+              fontSize: '1rem',
+            }}
+          />
+          {errorField === 'accountNumber' && (
+            <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+              {message}
+            </span>
+          )}
+        </div>
 
-        <input
-          type="text"
-          placeholder="Account Number"
-          value={accountNumber}
-          onChange={(e) => setAccountNumber(e.target.value)}
-          required
-          style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '16px' }}
-        />
+        {/* Password */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <label style={{ marginBottom: '5px', color: '#c9d1d9', fontWeight: '500' }}>
+            Password
+          </label>
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={{
+              padding: '12px',
+              borderRadius: '8px',
+              border: '1px solid #30363d',
+              backgroundColor: '#0d1117',
+              color: '#f0f6fc',
+              fontSize: '1rem',
+            }}
+          />
+          {errorField === 'password' && (
+            <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+              {message}
+            </span>
+          )}
+        </div>
 
+        {/* Register Button */}
         <button
           type="submit"
           style={{
             padding: '12px',
-            borderRadius: '6px',
+            borderRadius: '8px',
             border: 'none',
-            backgroundColor: '#28a745',
+            backgroundColor: '#00B7A8',
             color: '#fff',
-            fontWeight: 'bold',
+            fontWeight: '600',
+            fontSize: '1rem',
             cursor: 'pointer',
-            fontSize: '16px'
+            transition: 'background-color 0.3s ease, transform 0.2s ease',
           }}
+          onMouseOver={(e) => (e.target.style.backgroundColor = '#00D2C0')}
+          onMouseOut={(e) => (e.target.style.backgroundColor = '#009C90')}
         >
           Register
         </button>
       </form>
 
-      {message && <p style={{ marginTop: '15px', color: 'red' }}>{message}</p>}
-
+      {/* Login Link */}
       <div style={{ marginTop: '20px' }}>
-        <Link to="/login-customer" style={{ color: '#007bff', textDecoration: 'none' }}>
+        <Link
+          to="/login-customer"
+          style={{
+            color: '#58a6ff',
+            textDecoration: 'none',
+            fontWeight: '500',
+          }}
+        >
           Already have an account? Log in now
         </Link>
       </div>
+
+      <div style={{ marginTop: '10px' }}>
+        <Link
+          to="/"
+          style={{
+            color: '#58a6ff',
+            textDecoration: 'none',
+            fontWeight: '500',
+          }}
+        >
+          Back to Home
+        </Link>
+      </div>
     </div>
-  )
+  );
+
+
 }

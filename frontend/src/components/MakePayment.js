@@ -11,6 +11,7 @@ export default function MakePayment() {
     const [payeeAccountNumber, setPayeeAccountNumber] = useState('')
     const [swiftCode, setSwiftCode] = useState('')
     const [message, setMessage] = useState('')
+    const [errorField, setErrorField] = useState('')
 
     const navigate = useNavigate()
     const token = localStorage.getItem('token')
@@ -22,14 +23,15 @@ export default function MakePayment() {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        // sanitised inputs 
-        const cleanAmount = DOMPurify.sanitize(cleanAmount)
+
+        //Sanitised inputs 
+        const cleanAmount = DOMPurify.sanitize(amount)
         const cleanCurrency = DOMPurify.sanitize(currency)
         const cleanProvider = DOMPurify.sanitize(provider)
         const cleanPayeeName = DOMPurify.sanitize(payeeName)
         const cleanPayeeAccountNumber = DOMPurify.sanitize(payeeAccountNumber)
         const cleanSwiftCode = DOMPurify.sanitize(swiftCode)
-    
+
 
         //Regex patterns for frontend validation
         const amountRegex = /^(?:[1-9]\d*|0?\.\d*[1-9]\d?)$/
@@ -37,31 +39,52 @@ export default function MakePayment() {
         const payeeAccountNumberRegex = /^\d{9,12}$/
         const swiftCodeRegex = /^[A-Za-z0-9]{8,11}$/
 
+        //Validating user input
         if (!amountRegex.test(amount)) {
             setMessage('Invalid amount.')
+            setErrorField('amount')
+            return
         }
 
         if (!payeeNameRegex.test(payeeName)) {
             setMessage('Invalid name.')
+            setErrorField('payeeName')
+            return
         }
 
         if (!payeeAccountNumberRegex.test(payeeAccountNumber)) {
             setMessage('Invalid account number.')
+            setErrorField('payeeAccountNumber')
+            return
         }
 
         if (!swiftCodeRegex.test(swiftCode)) {
             setMessage('Invalid SWIFT code.')
+            setErrorField('swiftCode')
+            return
+        }
+
+        if (!currency) {
+            setMessage('Select a currency.')
+            setErrorField('currency')
+            return
+        }
+
+        if (!provider) {
+            setMessage('Select a provider.')
+            setErrorField('provider')
+            return
         }
 
         try {
             const response = await axios.post('https://localhost:2000/payments/make-payment',
                 {
-                    cleanAmount,
-                    cleanCurrency,
-                    cleanProvider,
-                    cleanPayeeName,
-                    cleanPayeeAccountNumber,
-                    cleanSwiftCode
+                    amount: cleanAmount,
+                    currency: cleanCurrency,
+                    provider: cleanProvider,
+                    payeeName: cleanPayeeName,
+                    payeeAccountNumber: cleanPayeeAccountNumber,
+                    swiftCode: cleanSwiftCode
                 },
                 { headers: { Authorization: `Bearer ${token}` } }
             )
@@ -83,135 +106,255 @@ export default function MakePayment() {
     }
 
     return (
-        <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            fontFamily: 'Arial, sans-serif',
-            padding: '20px',
-            backgroundColor: '#f5f5f5',
-            minHeight: '100vh'
-        }}>
-            <h1 style={{ marginBottom: '30px', color: '#333' }}>Submit Payment</h1>
+        <div
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                fontFamily: 'Arial, sans-serif',
+                padding: '20px',
+                background: 'linear-gradient(135deg, #0d1117, #161b22)',
+                color: '#f0f6fc',
+                minHeight: '100vh',
+            }}
+        >
+            {/* Header */}
+            <h1
+                style={{
+                    marginBottom: '10px',
+                    fontSize: '2.5rem',
+                    fontWeight: 'bold',
+                    color: '#f0f6fc',
+                    borderBottom: '2px solid #30363d',
+                    textAlign: 'center',
+                }}
+            >
+                Submit New Payment Request
+            </h1>
 
+            <h2
+                style={{
+                    marginBottom: '30px',
+                    fontSize: '1rem',
+                    fontWeight: '400',
+                    color: '#c9d1d9',
+                    textAlign: 'center',
+                }}
+            >
+                Your payment will be submitted for verification before being submitted to SWIFT.
+            </h2>
+
+            {/* Payment Form */}
             <form
                 onSubmit={handleSubmit}
                 style={{
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '15px',
-                    backgroundColor: '#fff',
+                    gap: '20px',
+                    backgroundColor: '#161b22',
                     padding: '30px',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
                     width: '100%',
-                    maxWidth: '400px'
+                    maxWidth: '400px',
                 }}
             >
                 {/* Amount */}
-                <input
-                    type="text"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    placeholder="Amount"
-                    style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '16px' }}
-                />
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <label style={{ marginBottom: '5px', color: '#c9d1d9', fontWeight: '500' }}>
+                        Amount
+                    </label>
+                    <input
+                        type="text"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        placeholder="Enter amount"
+                        style={{
+                            padding: '12px',
+                            borderRadius: '8px',
+                            border: '1px solid #30363d',
+                            backgroundColor: '#0d1117',
+                            color: '#f0f6fc',
+                            fontSize: '1rem',
+                        }}
+                    />
+                    {errorField === 'amount' && (
+                        <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+                            {message}
+                        </span>
+                    )}
+                </div>
 
-                {/* Currency Dropdown */}
-                <select
-                    value={currency}
-                    onChange={e => setCurrency(e.target.value)}
-                    style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '16px' }}
-                >
-                    <option value="">Select currency</option>
-                    <option value="USD">USD - US Dollar</option>
-                    <option value="EUR">EUR - Euro</option>
-                    <option value="ZAR">ZAR - South African Rand</option>
-                    <option value="GBP">GBP - Great British Pound</option>
-                </select>
+                {/* Currency */}
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <label style={{ marginBottom: '5px', color: '#c9d1d9', fontWeight: '500' }}>
+                        Currency
+                    </label>
+                    <select
+                        value={currency}
+                        onChange={(e) => setCurrency(e.target.value)}
+                        style={{
+                            padding: '12px',
+                            borderRadius: '8px',
+                            border: '1px solid #30363d',
+                            backgroundColor: '#0d1117',
+                            color: '#f0f6fc',
+                            fontSize: '1rem',
+                        }}
+                    >
+                        <option value="">Select currency</option>
+                        <option value="USD">USD - US Dollar</option>
+                        <option value="EUR">EUR - Euro</option>
+                        <option value="ZAR">ZAR - South African Rand</option>
+                        <option value="GBP">GBP - Great British Pound</option>
+                    </select>
+                    {errorField === 'currency' && (
+                        <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+                            {message}
+                        </span>
+                    )}
+                </div>
 
-                {/* Provider Radio Buttons */}
-                <div>
-                    <p>Payment Provider:</p>
-                    <label style={{ marginRight: '15px' }}>
+                {/* Payment Provider */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <p style={{ margin: 0, color: '#c9d1d9', fontWeight: '500' }}>Payment Provider</p>
+                    <label style={{ color: '#f0f6fc' }}>
                         <input
                             type="radio"
                             value="swift"
                             checked={provider === 'swift'}
-                            onChange={e => setProvider(e.target.value)}
+                            onChange={(e) => setProvider(e.target.value)}
+                            style={{ marginRight: '8px' }}
                         />
                         SWIFT
                     </label>
+                    {errorField === 'provider' && (
+                        <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+                            {message}
+                        </span>
+                    )}
                 </div>
 
                 {/* Payee Name */}
-                <input
-                    type="text"
-                    value={payeeName}
-                    onChange={(e) => setPayeeName(e.target.value)}
-                    placeholder="Payee Name"
-                    style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '16px' }}
-                />
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <label style={{ marginBottom: '5px', color: '#c9d1d9', fontWeight: '500' }}>
+                        Payee Name
+                    </label>
+                    <input
+                        type="text"
+                        value={payeeName}
+                        onChange={(e) => setPayeeName(e.target.value)}
+                        placeholder="Enter payee name"
+                        style={{
+                            padding: '12px',
+                            borderRadius: '8px',
+                            border: '1px solid #30363d',
+                            backgroundColor: '#0d1117',
+                            color: '#f0f6fc',
+                            fontSize: '1rem',
+                        }}
+                    />
+                    {errorField === 'payeeName' && (
+                        <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+                            {message}
+                        </span>
+                    )}
+                </div>
 
                 {/* Payee Account Number */}
-                <input
-                    type="text"
-                    value={payeeAccountNumber}
-                    onChange={(e) => setPayeeAccountNumber(e.target.value)}
-                    placeholder="Payee Account Number"
-                    style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '16px' }}
-                />
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <label style={{ marginBottom: '5px', color: '#c9d1d9', fontWeight: '500' }}>
+                        Payee Account Number
+                    </label>
+                    <input
+                        type="text"
+                        value={payeeAccountNumber}
+                        onChange={(e) => setPayeeAccountNumber(e.target.value)}
+                        placeholder="Enter account number"
+                        style={{
+                            padding: '12px',
+                            borderRadius: '8px',
+                            border: '1px solid #30363d',
+                            backgroundColor: '#0d1117',
+                            color: '#f0f6fc',
+                            fontSize: '1rem',
+                        }}
+                    />
+                    {errorField === 'payeeAccountNumber' && (
+                        <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+                            {message}
+                        </span>
+                    )}
+                </div>
 
                 {/* SWIFT Code */}
-                <input
-                    type="text"
-                    value={swiftCode}
-                    onChange={(e) => setSwiftCode(e.target.value)}
-                    placeholder="SWIFT Code"
-                    style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '16px' }}
-                />
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <label style={{ marginBottom: '5px', color: '#c9d1d9', fontWeight: '500' }}>
+                        SWIFT Code
+                    </label>
+                    <input
+                        type="text"
+                        value={swiftCode}
+                        onChange={(e) => setSwiftCode(e.target.value)}
+                        placeholder="Enter SWIFT code"
+                        style={{
+                            padding: '12px',
+                            borderRadius: '8px',
+                            border: '1px solid #30363d',
+                            backgroundColor: '#0d1117',
+                            color: '#f0f6fc',
+                            fontSize: '1rem',
+                        }}
+                    />
+                    {errorField === 'swiftCode' && (
+                        <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+                            {message}
+                        </span>
+                    )}
+                </div>
 
                 {/* Submit Button */}
                 <button
                     type="submit"
                     style={{
                         padding: '12px',
-                        borderRadius: '6px',
+                        borderRadius: '8px',
                         border: 'none',
-                        backgroundColor: '#28a745',
+                        backgroundColor: '#00B7A8',
                         color: '#fff',
-                        fontWeight: 'bold',
+                        fontWeight: '600',
+                        fontSize: '1rem',
                         cursor: 'pointer',
-                        fontSize: '16px'
+                        transition: 'background-color 0.3s ease',
                     }}
+                    onMouseOver={(e) => (e.target.style.backgroundColor = '#00D2C0')}
+                    onMouseOut={(e) => (e.target.style.backgroundColor = '#009C90')}
                 >
                     Submit Payment
                 </button>
 
                 {/* Logout Button */}
-                <div>
-                    <button
-                        type="button"
-                        onClick={handleLogout}
-                        style={{
-                            padding: '10px',
-                            marginTop: '10px',
-                            borderRadius: '6px',
-                            border: 'none',
-                            backgroundColor: '#dc3545',
-                            color: '#fff',
-                            cursor: 'pointer',
-                            fontSize: '16px'
-                        }}
-                    >
-                        Logout
-                    </button>
-                </div>
-
-                {/* Message */}
-                {message && <p style={{ marginTop: '15px', color: message.includes('success') ? 'green' : 'red' }}>{message}</p>}
-
+                <button
+                    type="button"
+                    onClick={handleLogout}
+                    style={{
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        backgroundColor: '#dc3545',
+                        color: '#fff',
+                        fontWeight: '600',
+                        fontSize: '1rem',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.3s ease',
+                    }}
+                    onMouseOver={(e) => (e.target.style.backgroundColor = '#e55361')}
+                    onMouseOut={(e) => (e.target.style.backgroundColor = '#dc3545')}
+                >
+                    Logout
+                </button>
             </form>
         </div>
-    )
+    );
+
 }

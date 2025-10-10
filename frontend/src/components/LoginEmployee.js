@@ -16,7 +16,7 @@ export default function LoginEmployee() {
 
     //sanitised input
     const cleanEmail = DOMPurify.sanitize(email)
-    
+
     try {
       const response = await axios.post('https://localhost:2000/employees/login',
         { email: cleanEmail, password })
@@ -40,30 +40,58 @@ export default function LoginEmployee() {
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '100vh',
-      fontFamily: 'Arial, sans-serif',
-      backgroundColor: '#f5f5f5',
-      padding: '20px'
-    }}>
-      <h1 style={{ marginBottom: '30px', color: '#333' }}>Employee Login</h1>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        fontFamily: 'Arial, sans-serif',
+        background: 'linear-gradient(135deg, #0d1117, #161b22)',
+        color: '#f0f6fc',
+        padding: '20px',
+      }}
+    >
+      {/* Header */}
+      <h1
+        style={{
+          fontSize: '2.5rem',
+          fontWeight: 'bold',
+          color: '#f0f6fc',
+          borderBottom: '2px solid #30363d',
+          textAlign: 'center',
+          margin: 0
+        }}
+      >
+        Employee Login
+      </h1>
 
+      <h2
+        style={{
+          marginBottom: '30px',
+          fontSize: '1rem',
+          fontWeight: '400',
+          color: '#c9d1d9',
+          textAlign: 'center',
+        }}
+      >
+        Log in using your assigned credentials.
+      </h2>
+
+      {/* Login Form */}
       <form
         onSubmit={handleSubmit}
         style={{
           display: 'flex',
           flexDirection: 'column',
           gap: '15px',
-          backgroundColor: '#fff',
+          backgroundColor: '#161b22',
           padding: '30px',
-          borderRadius: '8px',
-          boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+          borderRadius: '12px',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
           width: '100%',
-          maxWidth: '400px'
+          maxWidth: '400px',
         }}
       >
         <input
@@ -73,10 +101,12 @@ export default function LoginEmployee() {
           onChange={(e) => setEmail(e.target.value)}
           required
           style={{
-            padding: '10px',
-            borderRadius: '6px',
-            border: '1px solid #ccc',
-            fontSize: '16px'
+            padding: '12px',
+            borderRadius: '8px',
+            border: '1px solid #30363d',
+            backgroundColor: '#0d1117',
+            color: '#f0f6fc',
+            fontSize: '1rem',
           }}
         />
 
@@ -87,10 +117,12 @@ export default function LoginEmployee() {
           onChange={(e) => setPassword(e.target.value)}
           required
           style={{
-            padding: '10px',
-            borderRadius: '6px',
-            border: '1px solid #ccc',
-            fontSize: '16px'
+            padding: '12px',
+            borderRadius: '8px',
+            border: '1px solid #30363d',
+            backgroundColor: '#0d1117',
+            color: '#f0f6fc',
+            fontSize: '1rem',
           }}
         />
 
@@ -98,26 +130,42 @@ export default function LoginEmployee() {
           type="submit"
           style={{
             padding: '12px',
-            borderRadius: '6px',
+            borderRadius: '8px',
             border: 'none',
-            backgroundColor: '#007bff',
+            backgroundColor: '#00B786',
             color: '#fff',
-            fontWeight: 'bold',
+            fontWeight: '600',
+            fontSize: '1rem',
             cursor: 'pointer',
-            fontSize: '16px'
+            transition: 'background-color 0.3s ease, transform 0.2s ease',
           }}
+          onMouseOver={(e) => (e.target.style.backgroundColor = '#00D49A')}
+          onMouseOut={(e) => (e.target.style.backgroundColor = '#009E72')}
         >
           Login
         </button>
       </form>
 
-      {message && <p style={{ marginTop: '15px', color: 'red' }}>{message}</p>}
+      {/* Error Message */}
+      {message && (
+        <p style={{ marginTop: '15px', color: '#ff6b6b', fontWeight: '500' }}>
+          {message}
+        </p>
+      )}
 
+      {/* Back Link */}
       <div style={{ marginTop: '20px' }}>
-        <Link to="/" style={{ color: '#007bff', textDecoration: 'none' }}>
+        <Link
+          to="/"
+          style={{
+            color: '#58a6ff',
+            textDecoration: 'none',
+            fontWeight: '500',
+          }}
+        >
           Back to Home
         </Link>
       </div>
     </div>
-  )
+  );
 }
