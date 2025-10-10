@@ -10,6 +10,7 @@ export default function Register() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
+  const [errorField, setErrorField] = useState('')
 
   const navigate = useNavigate()
 
@@ -31,26 +32,31 @@ export default function Register() {
 
     if (!nameRegex.test(fullName)) {
       setMessage('Names may only contain letters and hyphens.')
+      setErrorField('fullName')
       return
     }
 
     if (!emailRegex.test(email)) {
       setMessage('Invalid email format.')
+      setErrorField('email')
       return
     }
 
     if (!passwordRegex.test(password)) {
       setMessage('Password must be a minimum of 8 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character.')
+      setErrorField('password')
       return
     }
 
     if (!idRegex.test(idNumber)) {
       setMessage('Invalid ID number.')
+      setErrorField('idNumber')
       return
     }
 
     if (!accountRegex.test(accountNumber)) {
       setMessage('Valid account numbers are between 9 and 12 digits long.')
+      setErrorField('accountNumber')
       return
     }
 
@@ -141,6 +147,11 @@ export default function Register() {
               fontSize: '1rem',
             }}
           />
+          {errorField === 'fullName' && (
+            <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+              {message}
+            </span>
+          )}
         </div>
 
         {/* Email */}
@@ -163,6 +174,11 @@ export default function Register() {
               fontSize: '1rem',
             }}
           />
+          {errorField === 'email' && (
+            <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+              {message}
+            </span>
+          )}
         </div>
 
         {/* ID Number */}
@@ -185,6 +201,11 @@ export default function Register() {
               fontSize: '1rem',
             }}
           />
+          {errorField === 'idNumber' && (
+            <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+              {message}
+            </span>
+          )}
         </div>
 
         {/* Account Number */}
@@ -207,6 +228,11 @@ export default function Register() {
               fontSize: '1rem',
             }}
           />
+          {errorField === 'accountNumber' && (
+            <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+              {message}
+            </span>
+          )}
         </div>
 
         {/* Password */}
@@ -229,6 +255,11 @@ export default function Register() {
               fontSize: '1rem',
             }}
           />
+          {errorField === 'password' && (
+            <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+              {message}
+            </span>
+          )}
         </div>
 
         {/* Register Button */}
