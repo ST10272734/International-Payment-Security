@@ -283,13 +283,6 @@ export default function Register() {
         </button>
       </form>
 
-      {/* Error Message */}
-      {message && (
-        <p style={{ marginTop: '15px', color: '#ff6b6b', fontWeight: '500' }}>
-          {message}
-        </p>
-      )}
-
       {/* Login Link */}
       <div style={{ marginTop: '20px' }}>
         <Link
