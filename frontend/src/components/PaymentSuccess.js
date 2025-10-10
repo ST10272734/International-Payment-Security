@@ -7,7 +7,7 @@ export default function PaymentSuccess() {
         localStorage.removeItem('token')
         navigate('/')
     }
-    
+
     return (
         <div
             style={{
@@ -23,9 +23,26 @@ export default function PaymentSuccess() {
                 color: '#f0f6fc'
             }}
         >
-            <h1 style={{ color: '#28a745', marginBottom: '40px', fontSize: '2.5rem' }}>
-                Payment Successful!
+            <h1 style={{
+                color: '#14bf53ff',
+                fontSize: '2rem',
+                margin: 0
+            }}
+            >
+                Your payment request has been submitted.
             </h1>
+
+            <h2
+                style={{
+                    marginBottom: '30px',
+                    fontSize: '1.5rem',
+                    fontWeight: '300',
+                    color: '#98cfacff',
+                    textAlign: 'center',
+                }}
+            >
+                Your request is undergoing verification.
+            </h2>
 
             <div style={{ marginBottom: '20px' }}>
                 <Link
@@ -43,7 +60,7 @@ export default function PaymentSuccess() {
                     onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#0056b3')}
                     onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#007bff')}
                 >
-                    Make Another Payment
+                    Make another payment
                 </Link>
             </div>
 

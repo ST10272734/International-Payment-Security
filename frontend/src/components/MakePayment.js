@@ -23,7 +23,8 @@ export default function MakePayment() {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        // sanitised inputs 
+
+        //Sanitised inputs 
         const cleanAmount = DOMPurify.sanitize(amount)
         const cleanCurrency = DOMPurify.sanitize(currency)
         const cleanProvider = DOMPurify.sanitize(provider)

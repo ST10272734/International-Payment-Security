@@ -51,7 +51,7 @@ export default function Home() {
         to="/login-employee"
         style={{
           padding: '14px 28px',
-          backgroundColor: '#00B786',
+          backgroundColor: '#00b796ff',
           color: '#fff',
           borderRadius: '8px',
           textDecoration: 'none',

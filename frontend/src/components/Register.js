@@ -100,17 +100,28 @@ export default function Register() {
       {/* Header */}
       <h1
         style={{
-          marginBottom: '30px',
           fontSize: '2.5rem',
           fontWeight: 'bold',
           color: '#f0f6fc',
           borderBottom: '2px solid #30363d',
-          paddingBottom: '10px',
           textAlign: 'center',
+          margin: 0
         }}
       >
         Register
       </h1>
+
+      <h2
+        style={{
+          marginBottom: '30px',
+          fontSize: '1rem',
+          fontWeight: '400',
+          color: '#c9d1d9',
+          textAlign: 'center',
+        }}
+      >
+        Provide the required details below.
+      </h2>
 
       {/* Registration Form */}
       <form
@@ -188,7 +199,7 @@ export default function Register() {
           </label>
           <input
             type="text"
-            placeholder="13-digit South African ID"
+            placeholder="13-digit South African ID number"
             value={idNumber}
             onChange={(e) => setIdNumber(e.target.value)}
             required
@@ -215,7 +226,7 @@ export default function Register() {
           </label>
           <input
             type="text"
-            placeholder="9 or 12 digit account number"
+            placeholder="9-12 digit account number"
             value={accountNumber}
             onChange={(e) => setAccountNumber(e.target.value)}
             required
@@ -242,7 +253,7 @@ export default function Register() {
           </label>
           <input
             type="password"
-            placeholder="Enter a secure password"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required

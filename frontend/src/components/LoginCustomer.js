@@ -68,17 +68,28 @@ export default function LoginCustomer() {
       {/* Header */}
       <h1
         style={{
-          marginBottom: '30px',
           fontSize: '2.5rem',
           fontWeight: 'bold',
           color: '#f0f6fc',
           borderBottom: '2px solid #30363d',
-          paddingBottom: '10px',
           textAlign: 'center',
+          margin: 0
         }}
       >
         Customer Login
       </h1>
+
+      <h2
+        style={{
+          marginBottom: '30px',
+          fontSize: '1rem',
+          fontWeight: '400',
+          color: '#c9d1d9',
+          textAlign: 'center',
+        }}
+      >
+        Log in using your account details.
+      </h2>
 
       {/* Login Form */}
       <form
