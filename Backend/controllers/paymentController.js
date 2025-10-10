@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb'
-
+import DOMPurify from 'isomorphic-dompurify'
+import {body, validationResult} from 'express-validator'
 import { addPayment, fetchPayments, updatePaymentStatus } from '../models/payment.js'
 
 const amountRegex = /^(?:[1-9]\d*|0?\.\d*[1-9]\d?)$/
@@ -7,47 +8,31 @@ const payeeNameRegex = /^[A-Za-z\s-]+$/
 const payeeAccountNumberRegex = /^\d{9,12}$/
 const swiftCodeRegex = /^[A-Za-z0-9]{8,11}$/
 
+export const addPaymentValidator = [
+    body('amount').matches(amountRegex).withMessage('Invalid amount value.'),
+    body('currency').notEmpty().withMessage('Currency is required.'),
+    body('provider').notEmpty().withMessage('Payment provider is required.'),
+    body('payeeName').matches(payeeNameRegex).withMessage('Invalid payee name.'),
+    body('payeeAccountNumber').matches(payeeAccountNumberRegex).withMessage('Invalid payee account.'),
+    body('swiftCode').matches(swiftCodeRegex).withMessage('Invalid SWIFT code.' )
+]
+
 export async function handleAddPayment(req, res) {
     try {
-        const {
-            amount,
-            currency,
-            provider,
-            payeeName,
-            payeeAccountNumber,
-            swiftCode
-        } = req.body
-
-        //Validating amount input
-        if (!amount || !amountRegex.test(amount)) {
-            return res.status(400).json({ message: 'Invalid amount value.' })
+        const errors = validationResult(req)
+        if(!errors.isEmpty()){ 
+            return res.status(400).json({errors: errors.array()})
         }
 
-        //Validating payee name input
-        if (!payeeName || !payeeNameRegex.test(payeeName)) {
-            return res.status(400).json({ message: 'Invalid payee name.' })
-        }
-
-        //Validating payee account number input
-        if (!payeeAccountNumber || !payeeAccountNumberRegex.test(payeeAccountNumber)) {
-            return res.status(400).json({ message: 'Invalid payee account.' })
-        }
-
-        //Validating swift code input
-        if (!swiftCode || !swiftCodeRegex.test(swiftCode)) {
-            return res.status(400).json({ message: 'Invalid SWIFT code.' })
-        }
-
-        //Validating currency selection
-        if (!currency) {
-            return res.status(400).json({ message: 'No currency selected.' })
-        }
-
-        //Validating provider selection
-        if (!provider) {
-            return res.status(400).json({ message: 'No payment provider selected.' })
-        }
-
+        let { amount, currency, provider, payeeName, payeeAccountNumber, swiftCode } = req.body
+        // sanitize input
+        amount = DOMPurify.sanitize(amount)
+        currency = DOMPurify.sanitize(currency)
+        provider = DOMPurify.sanitize(provider)
+        payeeName = DOMPurify.sanitize(payeeName)
+        payeeAccountNumber = DOMPurify.sanitize(payeeAccountNumber)
+        swiftCode = DOMPurify.sanitize(swiftCode)
+        
         //Current user's ID
         const customerId = req.user.userId
 

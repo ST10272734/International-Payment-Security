@@ -20,19 +20,20 @@ export const registerValidation = [
     body('password').matches(passwordRegex).withMessage('Password does not meet criteria.'),
     body('idNumber').matches(idNumberRegex).withMessage('Invalid ID number.'),
     body('accountNumber').matches(accountNumberRegex).withMessage('Invalid account number.')
+
 ]
 
 export const loginValidation = [
     body('email').matches(emailRegex).withMessage('Invalid credentials.'),
     body('accountNumber').matches(accountNumberRegex).withMessage('Invalid credentials.'),
-    body('password').matches(passwordRegex)
+    body('password').notEmpty().withMessage('Password required')
 ]
 
 export async function handleRegisterCustomer(req, res) {
     try {
-        const resErrors = validationResult(req)
-        if(!resErrors.isEmpty()){ //this is kind of backwards from the example
-            return res.status(400).json({resErrors: resErrors.array()})
+        const errors = validationResult(req)
+        if(!errors.isEmpty()){ //this is kind of backwards from the example
+            return res.status(400).json({errors: errors.array()})
         }
         
         let {fullName, idNumber, accountNumber, email, password} = req.body
@@ -81,9 +82,9 @@ export async function handleRegisterCustomer(req, res) {
 
 export async function handleLoginCustomer(req, res) {
     try{
-        const resErrors = validationResult(req)
-        if(!resErrors.isEmpty()){
-            return res.status(400).json({resErrors: resErrors.array()})
+        const errors = validationResult(req)
+        if(!errors.isEmpty()){
+            return res.status(400).json({errors: errors.array()})
         }
 
         let { email, accountNumber, password} = req.body
@@ -91,7 +92,6 @@ export async function handleLoginCustomer(req, res) {
         // sanitize inputs to prevent xss
         email = DOMPurify.sanitize(email)
         accountNumber = DOMPurify.sanitize(accountNumber)
-        password = DOMPurify.sanitize(password)
 
         const customer = await loginCustomer(email, accountNumber)
 

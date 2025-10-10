@@ -16,12 +16,12 @@ dotenv.config()
 const app = express()
 const port = process.env.PORT
 const generalLimiter = rateLimit({windowMs: 15 * 60 * 1000, max: 100, message: 'Too many requests from this IP, try again later'}) // limit each IP to 100 requests/ windowMs (15 mins)
-const loginLimiter = rateLimit({windowMs: 15*60*1000, max: 5, message: 'Too many login attempts from this IP, try again later'}) // limit each IP's login attempts to 5/windowMs (15 mins)
+const loginLimiter = rateLimit({windowMs: 15 * 60 * 1000, max: 5, message: 'Too many login attempts from this IP, try again later'}) // limit each IP's login attempts to 5/windowMs (15 mins)
 
 // will only allow front end to call api (mitm)
 app.use(cors({
   origin: 'https://localhost:3000',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   credentials: true
 }))
 
@@ -35,15 +35,13 @@ app.use('/employees/login', loginLimiter)
 app.use('/customers/login', loginLimiter)
 
 app.use(slowDown({
-  windowMs: 60 * 1000, //1 min
-  delayAfter: 10, //allow 10 requests per minute then start slowign down
-  delayMs: 500 // too add 500 ms delay per request above limit (10)
+  windowMs: 15 * 60 * 1000, //15 min
+  delayAfter: 10, //allow 10 requests per  then start slowign down
+  delayMs: () => 500 // too add 500 ms delay per request above limit (10)
 }))
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-
-
 
 // routes
 app.use('/employees', employeeRoutes)
@@ -86,4 +84,16 @@ Session hijacking prevention (session regeneration, expiry, SSL):
 SQL injection prevention (applied conceptually for MongoDB queries):
 4. https://planetscale.com/blog/how-to-prevent-sql-injection-attacks-in-node-js
 5. https://portswigger.net/web-security/sql-injection
+
+MITM protection -> Hemlet header security 
+6. https://blog.logrocket.com/using-helmet-node-js-secure-application/#content-security-policy-header
+7. https://www.npmjs.com/package/helmet
+
+DDOS Attack protection -> Rate limiter and slow down
+8. https://dev.to/itsnitinr/5-npm-packages-to-secure-your-node-js-backend-in-5-minutes-2732
+9. https://www.geeksforgeeks.org/node-js/what-is-express-rate-limit-in-node-js/
+
+XSS protection -> Input sanitisation and validation
+10. https://www.npmjs.com/package/dompurify
+11. https://express-validator.github.io/docs/guides/getting-started/
 */

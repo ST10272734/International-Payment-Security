@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
+import DOMPurify from 'dompurify'
 
 export default function LoginEmployee() {
   const [email, setEmail] = useState('')
@@ -13,9 +14,12 @@ export default function LoginEmployee() {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    //sanitised input
+    const cleanEmail = DOMPurify.sanitize(email)
+    
     try {
       const response = await axios.post('https://localhost:2000/employees/login',
-        { email, password })
+        { email: cleanEmail, password })
 
       const data = response.data
 

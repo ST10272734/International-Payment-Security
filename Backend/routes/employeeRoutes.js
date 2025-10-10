@@ -1,10 +1,10 @@
 import { Router } from 'express'
-import { handleRegisterEmployee, handleLoginEmployee } from '../controllers/employeeController.js'
+import { handleRegisterEmployee, handleLoginEmployee, eRegisterValidation, eLoginValidation } from '../controllers/employeeController.js'
 
 const router = Router()
 
 //Create a new employee
-router.post('/register', handleRegisterEmployee)
-router.post('/login', handleLoginEmployee)
+router.post('/register', eRegisterValidation, handleRegisterEmployee)
+router.post('/login', eLoginValidation, handleLoginEmployee)
 
 export default router

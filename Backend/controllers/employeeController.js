@@ -1,6 +1,8 @@
 import bcrypt from 'bcrypt'
 import argon2 from 'argon2'
 import jwt from 'jsonwebtoken'
+import DOMPurify from 'isomorphic-dompurify'
+import {body, validationResult} from 'express-validator'
 import { registerEmployee, checkEmployees, loginEmployee } from '../models/employee.js'
 
 const nameRegex = /^[A-Za-z\s]+$/
@@ -8,37 +10,40 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=<>?{}[\]~]).{8,}$/
 // const saltRounds = 10
 
+// use express validator checks with the regex
+export const eRegisterValidation = [
+    body('fullName').matches(nameRegex).withMessage('Invalid name. Only letters, spaces and hyphens allowed'),
+    body('email').matches(emailRegex).withMessage('Please enter a valid email address.'),
+    body('password').matches(passwordRegex).withMessage('The password provided does not meet the minimum criteria.')
+]
+
+export const eLoginValidation = [
+    body('email').matches(emailRegex).withMessage('Invalid credentials.'),
+    body('password').notEmpty().withMessage('Password required.')
+]
+
+
 export async function handleRegisterEmployee(req, res) {
     try {
-        const { fullName, email, password } = req.body
-
-        //Validating full name input
-        if (!fullName || !nameRegex.test(fullName)) {
-            return res.status(400).json({ message: 'Invalid name.' })
+        const errors = validationResult(req)
+        if(!errors.isEmpty()){ 
+            return res.status(400).json({errors: errors.array()})
         }
 
-        //Validating email address format
-        if (!email || !emailRegex.test(email)) {
-            return res.status(400).json({ message: 'Please enter a valid email address.' })
-        }
+        let { fullName, email, password } = req.body
 
-        //Validating password
-        if (!password || !passwordRegex.test(password)) {
-            return res.status(400).json({ message: 'The password provided does not meet the minimum criteria.' })
-        }
+        // sanitize input to prevent xss
+        fullName = DOMPurify.sanitize(fullName)
+        email = DOMPurify.sanitize(email)
 
-        //Check if employee already exists
+        //Check if employee already exists and If email is already in use
         const employeeExists = await checkEmployees(email)
-
-        //If email is already in use
         if (employeeExists) {
             return res.status(409).json({ message: 'Email already in use.' })
         }
 
         //Hashing and salting the password
-
-        //'Basic hashing and salting' - OG way we were taught
-        // const hashedPassword = await bcrypt.hash(password, saltRounds)
+        //'Basic hashing and salting' - OG way we were taught --> const hashedPassword = await bcrypt.hash(password, saltRounds)
 
         //Hashing using Argon2; salts automatically; shows 'additional research'
         const hashedPassword = await argon2.hash(password, { type: argon2.argon2id })
@@ -67,15 +72,23 @@ export async function handleRegisterEmployee(req, res) {
 
 export async function handleLoginEmployee(req, res) {
     try {
-        const { email, password } = req.body
+        const errors = validationResult(req)
+        if(!errors.isEmpty()){ 
+            return res.status(400).json({errors: errors.array()})
+        }
 
+        let { email, password } = req.body
+
+        //sanitize input to prevent xss
+        email = DOMPurify.sanitize(email)
+        
         const employee = await loginEmployee(email)
 
         if (!employee) {
             return res.status(401).json({ message: 'Invalid credentials.' })
         }
 
-        const isPasswordValid = await argon2.verify(employee.password, password)
+        const isPasswordValid = await argon2.verify(employee.password, password) 
 
         if (!isPasswordValid) {
             return res.status(401).json({ message: 'Invalid credentials.' })

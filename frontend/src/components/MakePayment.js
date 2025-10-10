@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import DOMPurify from 'dompurify'
 
 export default function MakePayment() {
     const [amount, setAmount] = useState('')
@@ -21,6 +22,14 @@ export default function MakePayment() {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        // sanitised inputs 
+        const cleanAmount = DOMPurify.sanitize(cleanAmount)
+        const cleanCurrency = DOMPurify.sanitize(currency)
+        const cleanProvider = DOMPurify.sanitize(provider)
+        const cleanPayeeName = DOMPurify.sanitize(payeeName)
+        const cleanPayeeAccountNumber = DOMPurify.sanitize(payeeAccountNumber)
+        const cleanSwiftCode = DOMPurify.sanitize(swiftCode)
+    
 
         //Regex patterns for frontend validation
         const amountRegex = /^(?:[1-9]\d*|0?\.\d*[1-9]\d?)$/
@@ -47,12 +56,12 @@ export default function MakePayment() {
         try {
             const response = await axios.post('https://localhost:2000/payments/make-payment',
                 {
-                    amount,
-                    currency,
-                    provider,
-                    payeeName,
-                    payeeAccountNumber,
-                    swiftCode
+                    cleanAmount,
+                    cleanCurrency,
+                    cleanProvider,
+                    cleanPayeeName,
+                    cleanPayeeAccountNumber,
+                    cleanSwiftCode
                 },
                 { headers: { Authorization: `Bearer ${token}` } }
             )

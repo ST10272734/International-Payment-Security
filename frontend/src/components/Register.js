@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
+import DOMPurify from 'dompurify'
 
 export default function Register() {
   const [fullName, setFullName] = useState('')
@@ -9,11 +10,18 @@ export default function Register() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
-
+  
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    //sanitised input
+    const cleanFullName = DOMPurify.sanitize(fullName)
+    const cleanIdNumber = DOMPurify.sanitize(idNumber)
+    const cleanAccountNumber = DOMPurify.sanitize(accountNumber)
+    const cleanEmail = DOMPurify.sanitize(email)
+    const cleanPassword = DOMPurify.sanitize(password)
 
     //Regex patterns for frontend validation
     const nameRegex = /^[A-Za-z\s-]+$/
@@ -50,11 +58,11 @@ export default function Register() {
     try {
       const response = await axios.post('https://localhost:2000/customers/register',
         {
-          fullName,
-          idNumber,
-          accountNumber,
-          email,
-          password
+          cleanFullName,
+          cleanIdNumber,
+          cleanAccountNumber,
+          cleanEmail,
+          cleanPassword
         })
 
       navigate('/login-customer')

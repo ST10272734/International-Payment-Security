@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { Link } from 'react-router-dom'
+import DOMPurify from 'dompurify'
 
 export default function LoginCustomer() {
   const [email, setEmail] = useState('')
@@ -14,9 +15,13 @@ export default function LoginCustomer() {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    //sanitised input
+    const cleanEmail = DOMPurify.sanitize(email)
+    const cleanAccountNumber = DOMPurify.sanitize(accountNumber)
+
     try {
       const response = await axios.post('https://localhost:2000/customers/login',
-        { email, accountNumber, password })
+        { cleanEmail, cleanAccountNumber, password })
 
       const data = response.data
 
