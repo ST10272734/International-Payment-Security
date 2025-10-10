@@ -39,85 +39,122 @@ export default function LoginEmployee() {
     }
   }
 
-  return (
-    <div style={{
+return (
+  <div
+    style={{
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
       minHeight: '100vh',
       fontFamily: 'Arial, sans-serif',
-      backgroundColor: '#f5f5f5',
-      padding: '20px'
-    }}>
-      <h1 style={{ marginBottom: '30px', color: '#333' }}>Employee Login</h1>
+      background: 'linear-gradient(135deg, #0d1117, #161b22)',
+      color: '#f0f6fc',
+      padding: '20px',
+    }}
+  >
+    {/* Header */}
+    <h1
+      style={{
+        marginBottom: '30px',
+        fontSize: '2.5rem',
+        fontWeight: 'bold',
+        color: '#f0f6fc',
+        borderBottom: '2px solid #30363d',
+        paddingBottom: '10px',
+        textAlign: 'center',
+      }}
+    >
+      Employee Login
+    </h1>
 
-      <form
-        onSubmit={handleSubmit}
+    {/* Login Form */}
+    <form
+      onSubmit={handleSubmit}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '15px',
+        backgroundColor: '#161b22',
+        padding: '30px',
+        borderRadius: '12px',
+        boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
+        width: '100%',
+        maxWidth: '400px',
+      }}
+    >
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
         style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '15px',
-          backgroundColor: '#fff',
-          padding: '30px',
+          padding: '12px',
           borderRadius: '8px',
-          boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-          width: '100%',
-          maxWidth: '400px'
+          border: '1px solid #30363d',
+          backgroundColor: '#0d1117',
+          color: '#f0f6fc',
+          fontSize: '1rem',
+        }}
+      />
+
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+        style={{
+          padding: '12px',
+          borderRadius: '8px',
+          border: '1px solid #30363d',
+          backgroundColor: '#0d1117',
+          color: '#f0f6fc',
+          fontSize: '1rem',
+        }}
+      />
+
+      <button
+        type="submit"
+        style={{
+          padding: '12px',
+          borderRadius: '8px',
+          border: 'none',
+          backgroundColor: '#00B786',
+          color: '#fff',
+          fontWeight: '600',
+          fontSize: '1rem',
+          cursor: 'pointer',
+          transition: 'background-color 0.3s ease, transform 0.2s ease',
+        }}
+        onMouseOver={(e) => (e.target.style.backgroundColor = '#00D49A')}
+        onMouseOut={(e) => (e.target.style.backgroundColor = '#009E72')}
+      >
+        Login
+      </button>
+    </form>
+
+    {/* Error Message */}
+    {message && (
+      <p style={{ marginTop: '15px', color: '#ff6b6b', fontWeight: '500' }}>
+        {message}
+      </p>
+    )}
+
+    {/* Back Link */}
+    <div style={{ marginTop: '20px' }}>
+      <Link
+        to="/"
+        style={{
+          color: '#58a6ff',
+          textDecoration: 'none',
+          fontWeight: '500',
         }}
       >
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          style={{
-            padding: '10px',
-            borderRadius: '6px',
-            border: '1px solid #ccc',
-            fontSize: '16px'
-          }}
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={{
-            padding: '10px',
-            borderRadius: '6px',
-            border: '1px solid #ccc',
-            fontSize: '16px'
-          }}
-        />
-
-        <button
-          type="submit"
-          style={{
-            padding: '12px',
-            borderRadius: '6px',
-            border: 'none',
-            backgroundColor: '#007bff',
-            color: '#fff',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            fontSize: '16px'
-          }}
-        >
-          Login
-        </button>
-      </form>
-
-      {message && <p style={{ marginTop: '15px', color: 'red' }}>{message}</p>}
-
-      <div style={{ marginTop: '20px' }}>
-        <Link to="/" style={{ color: '#007bff', textDecoration: 'none' }}>
-          Back to Home
-        </Link>
-      </div>
+        Back to Home
+      </Link>
     </div>
-  )
+  </div>
+);
 }
