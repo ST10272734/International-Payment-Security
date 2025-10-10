@@ -272,6 +272,19 @@ export default function Register() {
           Already have an account? Log in now
         </Link>
       </div>
+
+      <div style={{ marginTop: '10px' }}>
+        <Link
+          to="/"
+          style={{
+            color: '#58a6ff',
+            textDecoration: 'none',
+            fontWeight: '500',
+          }}
+        >
+          Back to Home
+        </Link>
+      </div>
     </div>
   );
 
