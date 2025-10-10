@@ -21,7 +21,9 @@ export default function LoginCustomer() {
 
     try {
       const response = await axios.post('https://localhost:2000/customers/login',
-        { cleanEmail, cleanAccountNumber, password })
+        { email: cleanEmail, 
+          accountNumber: cleanAccountNumber, 
+          password })
 
       const data = response.data
 

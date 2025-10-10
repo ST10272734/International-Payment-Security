@@ -21,7 +21,6 @@ export default function Register() {
     const cleanIdNumber = DOMPurify.sanitize(idNumber)
     const cleanAccountNumber = DOMPurify.sanitize(accountNumber)
     const cleanEmail = DOMPurify.sanitize(email)
-    const cleanPassword = DOMPurify.sanitize(password)
 
     //Regex patterns for frontend validation
     const nameRegex = /^[A-Za-z\s-]+$/
@@ -58,11 +57,11 @@ export default function Register() {
     try {
       const response = await axios.post('https://localhost:2000/customers/register',
         {
-          cleanFullName,
-          cleanIdNumber,
-          cleanAccountNumber,
-          cleanEmail,
-          cleanPassword
+            fullName: cleanFullName,
+            idNumber: cleanIdNumber,
+            accountNumber: cleanAccountNumber,
+            email: cleanEmail, 
+            password
         })
 
       navigate('/login-customer')
