@@ -23,7 +23,7 @@ export default function MakePayment() {
     const handleSubmit = async (e) => {
         e.preventDefault()
         // sanitised inputs 
-        const cleanAmount = DOMPurify.sanitize(cleanAmount)
+        const cleanAmount = DOMPurify.sanitize(amount)
         const cleanCurrency = DOMPurify.sanitize(currency)
         const cleanProvider = DOMPurify.sanitize(provider)
         const cleanPayeeName = DOMPurify.sanitize(payeeName)
@@ -56,12 +56,12 @@ export default function MakePayment() {
         try {
             const response = await axios.post('https://localhost:2000/payments/make-payment',
                 {
-                    cleanAmount,
-                    cleanCurrency,
-                    cleanProvider,
-                    cleanPayeeName,
-                    cleanPayeeAccountNumber,
-                    cleanSwiftCode
+                    amount: cleanAmount,
+                    currency: cleanCurrency,
+                    provider: cleanProvider,
+                    payeeName: cleanPayeeName,
+                    payeeAccountNumber: cleanPayeeAccountNumber,
+                    swiftCode: cleanSwiftCode
                 },
                 { headers: { Authorization: `Bearer ${token}` } }
             )
