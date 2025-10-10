@@ -1,6 +1,6 @@
 import { client } from '../db/db.js'
 
-const db = client.db('Test')
+const db = client.db('PaymentPortal')
 const employeesCollection = db.collection('Employees')
 
 //Creating new employee
