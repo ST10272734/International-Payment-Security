@@ -222,7 +222,7 @@ export default function MakePayment() {
                         <input
                             type="radio"
                             value="SWIFT"
-                            checked={provider === 'swift'}
+                            checked={provider === 'SWIFT'}
                             onChange={(e) => setProvider(e.target.value)}
                             style={{ marginRight: '8px' }}
                         />
