@@ -1,4 +1,3 @@
-import bcrypt from 'bcrypt'
 import argon2 from 'argon2'
 import jwt from 'jsonwebtoken'
 import DOMPurify from 'isomorphic-dompurify'
@@ -41,9 +40,6 @@ export async function handleRegisterEmployee(req, res) {
         if (employeeExists) {
             return res.status(409).json({ message: 'Email already in use.' })
         }
-
-        //Hashing and salting the password
-        //'Basic hashing and salting' - OG way we were taught --> const hashedPassword = await bcrypt.hash(password, saltRounds)
 
         //Hashing using Argon2; salts automatically; shows 'additional research'
         const hashedPassword = await argon2.hash(password, { type: argon2.argon2id })
