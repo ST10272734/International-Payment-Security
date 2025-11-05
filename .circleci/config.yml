@@ -7,6 +7,7 @@ jobs:
   build:
     docker:
       - image: cimg/node:22.0
+    context: SonarCloud  
     steps:
       - checkout
 
@@ -45,13 +46,9 @@ jobs:
             node -e "console.log('Frontend sanity check passed')"
 
       # ---------------- SONARCLOUD SCAN ----------------
-      - sonarcloud/scan:
-          organization: "st10272734"
-          projectKey: "ST10272734_International-Payment-Security"
+      - sonarcloud/scan
 
 workflows:
   main:
     jobs:
       - build
-
-# test pipeline trigger
