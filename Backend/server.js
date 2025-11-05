@@ -7,6 +7,7 @@ import { connect } from './db/db.js'
 import helmet from 'helmet' //mitm
 import rateLimit from 'express-rate-limit' //ddos
 import slowDown from 'express-slow-down' //ddos
+import mongoSanitize from 'express-mongo-sanitize' //nosql sanitiser
 
 import employeeRoutes from './routes/employeeRoutes.js'
 import customerRoutes from './routes/customerRoutes.js'
@@ -15,8 +16,16 @@ import paymentRoutes from './routes/paymentRoutes.js'
 dotenv.config()
 const app = express()
 const port = process.env.PORT
-const generalLimiter = rateLimit({windowMs: 15 * 60 * 1000, max: 100, message: 'Too many requests from this IP, try again later'}) // limit each IP to 100 requests/ windowMs (15 mins)
-const loginLimiter = rateLimit({windowMs: 15 * 60 * 1000, max: 5, message: 'Too many login attempts from this IP, try again later'}) // limit each IP's login attempts to 5/windowMs (15 mins)
+
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  max: 100, message: 'Too many requests from this IP, try again later'
+}) // limit each IP to 100 requests/ windowMs (15 mins)
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, max: 5, 
+  message: 'Too many login attempts from this IP, try again later'
+}) // limit each IP's login attempts to 5/windowMs (15 mins)
 
 // will only allow front end to call api (mitm)
 app.use(cors({
@@ -24,6 +33,9 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   credentials: true
 }))
+
+//Mounting mongoSanitize middleware globally before route handlers
+app.use(mongoSanitize())
 
 // encrypt traffic, force https
 app.use(helmet()) 
@@ -91,10 +103,7 @@ server.listen(port, () => {
   1. https://medium.com/%40jogikrunal9477/securing-passwords-in-node-js-the-argon2-way-46303b279097
   2. https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#argon2id
   3. https://medium.com/@mpreziuso/password-hashing-pbkdf2-scrypt-bcrypt-and-argon2-e25aaf41598e
-*/
 
-
-/*
 Security references used for implementing protection techniques:
 
 Clickjacking prevention (headers, CSP, and frame busting):
@@ -119,4 +128,10 @@ DDOS Attack protection -> Rate limiter and slow down
 XSS protection -> Input sanitisation and validation
 10. https://www.npmjs.com/package/dompurify
 11. https://express-validator.github.io/docs/guides/getting-started/
+*/
+
+/* PART 3 */
+/*
+Mongo sanitise
+1. https://www.npmjs.com/package/express-mongo-sanitize
 */
