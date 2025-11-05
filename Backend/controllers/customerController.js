@@ -1,32 +1,58 @@
-import bcrypt from 'bcrypt'
 import argon2 from 'argon2'
 import jwt from 'jsonwebtoken'
 import DOMPurify from 'isomorphic-dompurify'
 import {body, validationResult} from 'express-validator'
 import { registerCustomer, checkCustomers, loginCustomer } from '../models/customer.js'
 
-
 const nameRegex = /^[A-Za-z\s-]+$/
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=<>?{}[\]~]).{8,}$/
 const idNumberRegex = /^\d{13}$/
 const accountNumberRegex = /^\d{9,12}$/
-// const saltRounds = 10
 
 // use express validator checks with the regex
 export const registerValidation = [
-    body('fullName').matches(nameRegex).withMessage('Invalid name. Only letters, spaces and hyphens allowed'),
-    body('email').matches(emailRegex).withMessage('Invalid email address.'),
-    body('password').matches(passwordRegex).withMessage('Password does not meet criteria.'),
-    body('idNumber').matches(idNumberRegex).withMessage('Invalid ID number.'),
-    body('accountNumber').matches(accountNumberRegex).withMessage('Invalid account number.')
+    body('fullName')
+    .isString().withMessage('Invalid name.')
+    .bail()
+    .matches(nameRegex).withMessage('Only letters, spaces and hyphens allowed.'),
 
+    body('email')
+    .isString().withMessage('Invalid email address.')
+    .bail()
+    .matches(emailRegex).withMessage('Incorrect email address format.'),
+
+    body('password')
+    .isString().withMessage('Invalid password.')
+    .bail()
+    .matches(passwordRegex).withMessage('Password does not meet criteria.'),
+
+    body('idNumber')
+    .isString().withMessage('Invalid ID number.')
+    .bail()
+    .matches(idNumberRegex).withMessage('Only South African ID numbers allowed.'),
+
+    body('accountNumber')
+    .isString().withMessage('Invalid account number.')
+    .bail()
+    .matches(accountNumberRegex).withMessage('Invalid account number.')
 ]
 
 export const loginValidation = [
-    body('email').matches(emailRegex).withMessage('Invalid credentials.'),
-    body('accountNumber').matches(accountNumberRegex).withMessage('Invalid credentials.'),
-    body('password').notEmpty().withMessage('Password required')
+    body('email')
+    .isString().withMessage('Invalid email address.')
+    .bail()
+    .matches(emailRegex).withMessage('Invalid email address format.'),
+    
+    body('accountNumber')
+    .isString().withMessage('Invalid account number.')
+    .bail()
+    .matches(accountNumberRegex).withMessage('Invalid account number.'),
+
+    body('password')
+    .isString().withMessage('Invalid password.')
+    .bail()
+    .matches(passwordRegex).withMessage('Password does not meet criteria.')
 ]
 
 export async function handleRegisterCustomer(req, res) {
@@ -49,9 +75,6 @@ export async function handleRegisterCustomer(req, res) {
         if(customerExists){
             return res.status(409).json({ message: 'Customer with these details already exists.'})
         }
-
-        //Hashing and salting the password
-        //'Basic hashing and salting' - OG way we were taught --> const hashedPassword = await bcrypt.hash(password, saltRounds)
 
         //Hashing using Argon2; salts automatically; shows 'additional research'
         const hashedPassword = await argon2.hash(password, { type: argon2.argon2id })

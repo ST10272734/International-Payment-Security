@@ -9,12 +9,34 @@ const payeeAccountNumberRegex = /^\d{9,12}$/
 const swiftCodeRegex = /^[A-Za-z0-9]{8,11}$/
 
 export const addPaymentValidator = [
-    body('amount').matches(amountRegex).withMessage('Invalid amount value.'),
-    body('currency').notEmpty().withMessage('Currency is required.'),
-    body('provider').notEmpty().withMessage('Payment provider is required.'),
-    body('payeeName').matches(payeeNameRegex).withMessage('Invalid payee name.'),
-    body('payeeAccountNumber').matches(payeeAccountNumberRegex).withMessage('Invalid payee account.'),
-    body('swiftCode').matches(swiftCodeRegex).withMessage('Invalid SWIFT code.' )
+  body('amount')
+  .isString().withMessage('Invalid amount value.')
+  .bail()
+  .matches(amountRegex).withMessage('Invalid amount value.'),
+
+  body('currency')
+  .isIn(['USD', 'EUR', 'ZAR', 'GBP']).withMessage('Invalid currency selected.')
+  .bail()
+  .notEmpty().withMessage('Currency is required.'),
+
+  body('provider')
+  .isIn(['SWIFT']).withMessage('Invalid payment provider selected.')
+  .bail()
+  .notEmpty().withMessage('Payment provider is required.'),
+
+  body('payeeName')
+  .isString().withMessage('Invalid name.')
+  .bail().matches(payeeNameRegex).withMessage('Invalid payee name.'),
+
+  body('payeeAccountNumber')
+  .isString().withMessage('Invalid account number.')
+  .bail()
+  .matches(payeeAccountNumberRegex).withMessage('Invalid payee account.'),
+
+  body('swiftCode')
+  .isString().withMessage('Invalid SWIFT Code.')
+  .bail()
+  .matches(swiftCodeRegex).withMessage('Invalid SWIFT code.')
 ]
 
 export async function handleAddPayment(req, res) {

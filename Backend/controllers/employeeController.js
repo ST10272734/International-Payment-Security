@@ -11,16 +11,33 @@ const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=<>?{}
 
 // use express validator checks with the regex
 export const eRegisterValidation = [
-    body('fullName').matches(nameRegex).withMessage('Invalid name. Only letters, spaces and hyphens allowed'),
-    body('email').matches(emailRegex).withMessage('Please enter a valid email address.'),
-    body('password').matches(passwordRegex).withMessage('The password provided does not meet the minimum criteria.')
+    body('fullName')
+    .isString().withMessage('Invalid name.')
+    .bail()
+    .matches(nameRegex).withMessage('Only letters, spaces and hyphens allowed'),
+
+    body('email')
+    .isString().withMessage('Invalid email address.')
+    .bail()
+    .matches(emailRegex).withMessage('Incorrect email address format.'),
+
+    body('password')
+    .isString().withMessage('Invalid password.')
+    .bail()
+    .matches(passwordRegex).withMessage('The password provided does not meet the minimum criteria.')
 ]
 
 export const eLoginValidation = [
-    body('email').matches(emailRegex).withMessage('Invalid credentials.'),
-    body('password').notEmpty().withMessage('Password required.')
+    body('email')
+    .isString().withMessage('Invalid email address.')
+    .bail()
+    .matches(emailRegex).withMessage('Incorrect email address format.'),
+    
+    body('password')
+    .isString().withMessage('Invalid password.')
+    .bail()
+    .matches(passwordRegex).withMessage('The password provided does not meet the minimum criteria.')
 ]
-
 
 export async function handleRegisterEmployee(req, res) {
     try {
