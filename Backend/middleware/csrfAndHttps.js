@@ -26,13 +26,17 @@ export function setupCSRF(app) {
   // required to read/write cookies
   app.use(cookieParser())
 
-  // csurf configured to store token in a cookie accessible to JS
+  // csurf configured to store the secret in a separate, httpOnly cookie.
+  // We intentionally keep the secret cookie name different from the token cookie
+  // that we send to the client (which is readable by JS). This avoids overwriting
+  // the secret with the token value and causing validation failures.
   const csrfMiddleware = csurf({
     cookie: {
-      key: 'XSRF-TOKEN',    // cookie name
-      httpOnly: false,      // must be readable by client JS
+      // store secret under an internal name (httpOnly for safety)
+      key: '_csrfSecret',
+      httpOnly: true,
       sameSite: 'strict',
-      secure: true          // require HTTPS (set false only for local dev WITHOUT HTTPS)
+      secure: true
     }
   })
 
@@ -64,9 +68,11 @@ export function setupCSRF(app) {
    */
   function requireDoubleSubmit(req, res, next) {
     // Expect token in header 'X-XSRF-TOKEN'
-    const headerToken = req.get('X-XSRF-TOKEN') || req.get('x-xsrf-token') || req.get('x-csrf-token')
-    // read cookie value
-    const cookieToken = req.cookies && req.cookies['XSRF-TOKEN']
+    const headerToken = req.get('X-XSRF-TOKEN') || req.get('x-xsrf-token') || req.get('x-csrf-token') || req.get('X-CSRF-TOKEN')
+    // read cookie value (try multiple possible cookie keys that might be present)
+    const cookieToken = req.cookies && (
+      req.cookies['XSRF-TOKEN'] || req.cookies['xsrf-token'] || req.cookies['xsrftoken'] || req.cookies['_csrf']
+    )
 
     if (!headerToken || !cookieToken || headerToken !== cookieToken) {
       return res.status(403).json({ error: 'Invalid CSRF token' })

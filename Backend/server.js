@@ -34,8 +34,9 @@ const loginLimiter = rateLimit({
 })
 
 // --- CORS ---
+// Allow the frontend origins (both 3001 and 3000 are used in development).
 app.use(cors({
-  origin: 'https://localhost:3000',
+  origin: ['https://localhost:3000', 'https://localhost:3001'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   credentials: true,
 }))

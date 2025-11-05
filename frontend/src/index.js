@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import './index.css'
 import App from './App'
 import reportWebVitals from './reportWebVitals'
+import { API_BASE } from './utils/api'
 
 // CSRF protection in index.js
 // (This fetches the CSRF token cookie from the backend at app startup.
@@ -10,7 +11,8 @@ import reportWebVitals from './reportWebVitals'
 // in the X-XSRF-TOKEN header with any state-changing request.)
 const CSRFSetup = () => {
   useEffect(() => {
-    fetch('https://localhost:3000/csrf-token', {
+    // Request CSRF token from configured backend (API_BASE) so the cookie is set.
+    fetch(`${API_BASE}/csrf-token`, {
       credentials: 'include'
     }).catch(err => console.error('CSRF setup failed', err))
   }, [])
