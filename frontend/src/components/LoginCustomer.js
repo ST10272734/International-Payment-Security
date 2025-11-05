@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
-import { Link } from 'react-router-dom'
 import DOMPurify from 'dompurify'
+import { getCSRFToken } from '../utils/csrf'
+import { API_BASE } from '../utils/api'
 
 export default function LoginCustomer() {
   const [email, setEmail] = useState('')
@@ -15,40 +16,39 @@ export default function LoginCustomer() {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    //sanitised input
     const cleanEmail = DOMPurify.sanitize(email)
     const cleanAccountNumber = DOMPurify.sanitize(accountNumber)
 
     try {
-      const response = await axios.post('https://localhost:2000/customers/login',
+      const csrfToken = getCSRFToken()
+
+      const response = await axios.post(
+        `${API_BASE}/customers/login`,
+        { email: cleanEmail, accountNumber: cleanAccountNumber, password },
         {
-          email: cleanEmail,
-          accountNumber: cleanAccountNumber,
-          password
-        })
+          headers: { 'x-csrf-token': csrfToken },
+          withCredentials: true,
+        }
+      )
 
       const data = response.data
 
       if (response.status === 200) {
-        setMessage(data.message)
         localStorage.setItem('token', data.token)
-        const role = data.role
-
         navigate('/customers/payment')
-
       } else {
         setMessage(data.message)
       }
     } catch (err) {
-      if (err.response) {
-        setMessage(err.response.data.message || 'Login failed. Please try again.')
-      } else if (err.request) {
-        setMessage('Network error. Please check your connection.')
-      } else {
-        setMessage('Unexpected error. Please try again later.')
-      }
-      console.error(err)
+      handleError(err)
     }
+  }
+
+  const handleError = (err) => {
+    if (err.response) setMessage(err.response.data.message || 'Login failed.')
+    else if (err.request) setMessage('Network error.')
+    else setMessage('Unexpected error.')
+    console.error(err)
   }
 
   return (

@@ -2,108 +2,94 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import DOMPurify from 'dompurify'
+import { getCSRFToken } from '../utils/csrf'
+import { API_BASE } from '../utils/api'
 
 export default function MakePayment() {
-    const [amount, setAmount] = useState('')
-    const [currency, setCurrency] = useState('')
-    const [provider, setProvider] = useState('')
-    const [payeeName, setPayeeName] = useState('')
-    const [payeeAccountNumber, setPayeeAccountNumber] = useState('')
-    const [swiftCode, setSwiftCode] = useState('')
-    const [message, setMessage] = useState('')
-    const [errorField, setErrorField] = useState('')
+  const [amount, setAmount] = useState('')
+  const [currency, setCurrency] = useState('')
+  const [provider, setProvider] = useState('')
+  const [payeeName, setPayeeName] = useState('')
+  const [payeeAccountNumber, setPayeeAccountNumber] = useState('')
+  const [swiftCode, setSwiftCode] = useState('')
+  const [message, setMessage] = useState('')
+  const [errorField, setErrorField] = useState('')
 
-    const navigate = useNavigate()
-    const token = localStorage.getItem('token')
+  const navigate = useNavigate()
+  const token = localStorage.getItem('token')
 
-    const handleLogout = () => {
-        localStorage.removeItem('token')
-        navigate('/')
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    navigate('/')
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    // Sanitised inputs
+    const cleanAmount = DOMPurify.sanitize(amount)
+    const cleanCurrency = DOMPurify.sanitize(currency)
+    const cleanProvider = DOMPurify.sanitize(provider)
+    const cleanPayeeName = DOMPurify.sanitize(payeeName)
+    const cleanPayeeAccountNumber = DOMPurify.sanitize(payeeAccountNumber)
+    const cleanSwiftCode = DOMPurify.sanitize(swiftCode)
+
+    // Regex validation
+    const amountRegex = /^(?:[1-9]\d*|0?\.\d*[1-9]\d?)$/
+    const payeeNameRegex = /^[A-Za-z\s-]+$/
+    const payeeAccountNumberRegex = /^\d{9,12}$/
+    const swiftCodeRegex = /^[A-Za-z0-9]{8,11}$/
+
+    // Validate input
+    if (!amountRegex.test(amount)) return setError('amount', 'Invalid amount.')
+    if (!currency) return setError('currency', 'Select a currency.')
+    if (!provider) return setError('provider', 'Select a provider.')
+    if (!payeeNameRegex.test(payeeName)) return setError('payeeName', 'Invalid name.')
+    if (!payeeAccountNumberRegex.test(payeeAccountNumber))
+      return setError('payeeAccountNumber', 'Account numbers must be 9–12 digits.')
+    if (!swiftCodeRegex.test(swiftCode))
+      return setError('swiftCode', 'Must follow format AAAAA111 or AAAAA111XXX.')
+
+    try {
+      const csrfToken = getCSRFToken()
+
+            const response = await axios.post(
+                `${API_BASE}/payments/make-payment`,
+        {
+          amount: cleanAmount,
+          currency: cleanCurrency,
+          provider: cleanProvider,
+          payeeName: cleanPayeeName,
+          payeeAccountNumber: cleanPayeeAccountNumber,
+          swiftCode: cleanSwiftCode,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'x-csrf-token': csrfToken,
+          },
+          withCredentials: true,
+        }
+      )
+
+      setMessage('Payment sent.')
+      console.log(response.data)
+      navigate('/customers/payment-success')
+    } catch (err) {
+      handleError(err)
     }
+  }
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
+  const setError = (field, msg) => {
+    setMessage(msg)
+    setErrorField(field)
+  }
 
-        //Sanitised inputs 
-        const cleanAmount = DOMPurify.sanitize(amount)
-        const cleanCurrency = DOMPurify.sanitize(currency)
-        const cleanProvider = DOMPurify.sanitize(provider)
-        const cleanPayeeName = DOMPurify.sanitize(payeeName)
-        const cleanPayeeAccountNumber = DOMPurify.sanitize(payeeAccountNumber)
-        const cleanSwiftCode = DOMPurify.sanitize(swiftCode)
-
-
-        //Regex patterns for frontend validation
-        const amountRegex = /^(?:[1-9]\d*|0?\.\d*[1-9]\d?)$/
-        const payeeNameRegex = /^[A-Za-z\s-]+$/
-        const payeeAccountNumberRegex = /^\d{9,12}$/
-        const swiftCodeRegex = /^[A-Za-z0-9]{8,11}$/
-
-        //Validating user input
-        if (!amountRegex.test(amount)) {
-            setMessage('Invalid amount.')
-            setErrorField('amount')
-            return
-        }
-
-        if (!currency) {
-            setMessage('Select a currency.')
-            setErrorField('currency')
-            return
-        }
-
-        if (!provider) {
-            setMessage('Select a provider.')
-            setErrorField('provider')
-            return
-        }
-
-        if (!payeeNameRegex.test(payeeName)) {
-            setMessage('Invalid name.')
-            setErrorField('payeeName')
-            return
-        }
-
-        if (!payeeAccountNumberRegex.test(payeeAccountNumber)) {
-            setMessage('Account numbers must be between 9 and 12 digits.')
-            setErrorField('payeeAccountNumber')
-            return
-        }
-
-        if (!swiftCodeRegex.test(swiftCode)) {
-            setMessage('Must follow a of the format AAAAA111 or AAAAA111XXX.')
-            setErrorField('swiftCode')
-            return
-        }
-
-        try {
-            const response = await axios.post('https://localhost:2000/payments/make-payment',
-                {
-                    amount: cleanAmount,
-                    currency: cleanCurrency,
-                    provider: cleanProvider,
-                    payeeName: cleanPayeeName,
-                    payeeAccountNumber: cleanPayeeAccountNumber,
-                    swiftCode: cleanSwiftCode
-                },
-                { headers: { Authorization: `Bearer ${token}` } }
-            )
-
-            setMessage('Payment sent.')
-            console.log(response.data)
-
-            navigate('/customers/payment-success')
-
-        } catch (err) {
-            if (err.response) {
-                setMessage(err.response.data.message || 'Payment failed.')
-            } else {
-                setMessage('Network error.')
-            }
-
-            console.error(err)
-        }
-    }
+  const handleError = (err) => {
+    if (err.response) setMessage(err.response.data.message || 'Payment failed.')
+    else setMessage('Network error.')
+    console.error(err)
+  }
 
     return (
         <div
