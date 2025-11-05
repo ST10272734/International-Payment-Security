@@ -7,7 +7,6 @@ jobs:
   build:
     docker:
       - image: cimg/node:22.0
-    context: SonarCloud  
     steps:
       - checkout
 
@@ -51,4 +50,5 @@ jobs:
 workflows:
   main:
     jobs:
-      - build
+      - build:
+          context: SonarCloud
