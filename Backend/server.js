@@ -34,11 +34,29 @@ app.use(cors({
   credentials: true
 }))
 
-//Mounting mongoSanitize middleware globally before route handlers
-app.use(mongoSanitize())
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
+//Mounting mongoSanitize middleware globally before route handlers
+app.use((req, res, next) => {
+  mongoSanitize.sanitize(req.body, { replaceWith: '_' })
+  mongoSanitize.sanitize(req.query, { replaceWith: '_' })
+  mongoSanitize.sanitize(req.params, { replaceWith: '_' })
+  next()
+})
 // encrypt traffic, force https
-app.use(helmet()) 
+//Applying strict Content Security Policy (CSP) + keeping frame-ancestors to 'none'
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      frameAncestors: ["'none'"],
+    },
+  },
+  frameguard: { action: 'deny' },
+}))
+
 app.use(helmet.hsts({maxAge: 15*60*1000, includeSubDomains: true})) // 15 mins
 
 // blocks repeated requests to api and slow down attackers
@@ -51,9 +69,6 @@ app.use(slowDown({
   delayAfter: 10, //allow 10 requests per  then start slowign down
   delayMs: () => 500 // too add 500 ms delay per request above limit (10)
 }))
-
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
 
 // routes
 app.use('/employees', employeeRoutes)
@@ -134,4 +149,7 @@ XSS protection -> Input sanitisation and validation
 /*
 Mongo sanitise
 1. https://www.npmjs.com/package/express-mongo-sanitize
+
+Helment + CSP
+2. https://apurvupadhyay.medium.com/how-to-securing-your-application-with-https-and-helmet-%EF%B8%8F-8c280dfcec64
 */
