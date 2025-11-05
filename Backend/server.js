@@ -4,10 +4,13 @@ import express from 'express'
 import dotenv from 'dotenv'
 import cors from 'cors'
 import { connect } from './db/db.js'
-import helmet from 'helmet' //mitm
-import rateLimit from 'express-rate-limit' //ddos
-import slowDown from 'express-slow-down' //ddos
-import mongoSanitize from 'express-mongo-sanitize' //nosql sanitiser
+import helmet from 'helmet'
+import rateLimit from 'express-rate-limit'
+import slowDown from 'express-slow-down'
+import mongoSanitize from 'express-mongo-sanitize'
+import cookieParser from 'cookie-parser'
+import { setupCSRF, enforceHTTPS } from './middleware/csrfAndHttps.js'
+
 
 import employeeRoutes from './routes/employeeRoutes.js'
 import customerRoutes from './routes/customerRoutes.js'
@@ -15,37 +18,62 @@ import paymentRoutes from './routes/paymentRoutes.js'
 
 dotenv.config()
 const app = express()
-const port = process.env.PORT
+const port = process.env.PORT || 3000
 
+// --- Rate Limiting ---
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: 100, message: 'Too many requests from this IP, try again later'
-}) // limit each IP to 100 requests/ windowMs (15 mins)
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Too many requests from this IP, try again later.',
+})
 
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, max: 5, 
-  message: 'Too many login attempts from this IP, try again later'
-}) // limit each IP's login attempts to 5/windowMs (15 mins)
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: 'Too many login attempts from this IP, try again later.',
+})
 
-// will only allow front end to call api (mitm)
+// --- CORS ---
+// Allow the frontend origins (both 3001 and 3000 are used in development).
 app.use(cors({
-  origin: 'https://localhost:3000',
+  origin: ['https://localhost:3000', 'https://localhost:3001'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  credentials: true
+  credentials: true,
 }))
 
+// --- Body Parsers ---
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-//Mounting mongoSanitize middleware globally before route handlers
+// --- Enforce HTTPS ---
+app.use(enforceHTTPS)
+
+// --- Cookie Parser (required for CSRF) ---
+app.use(cookieParser())
+
+// --- CSRF Protection ---
+const { csrf, requireDoubleSubmit } = setupCSRF(app)
+
+// Endpoint for frontend to get the CSRF token
+app.get('/csrf-token', csrf, (req, res) => {
+  const token = req.csrfToken()
+  res.cookie('XSRF-TOKEN', token, {
+    httpOnly: false, // must be readable by JS
+    sameSite: 'strict',
+    secure: process.env.NODE_ENV === 'production', // true in prod only
+  })
+  res.json({ ok: true, csrfToken: token })
+})
+
+// --- MongoDB sanitisation (NoSQL injection prevention) ---
 app.use((req, res, next) => {
   mongoSanitize.sanitize(req.body, { replaceWith: '_' })
   mongoSanitize.sanitize(req.query, { replaceWith: '_' })
   mongoSanitize.sanitize(req.params, { replaceWith: '_' })
   next()
 })
-// encrypt traffic, force https
-//Applying strict Content Security Policy (CSP) + keeping frame-ancestors to 'none'
+
+// --- Helmet for secure headers (Clickjacking, MITM, CSP, etc.) ---
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -56,46 +84,42 @@ app.use(helmet({
   },
   frameguard: { action: 'deny' },
 }))
+app.use(helmet.hsts({ maxAge: 15 * 60 * 1000, includeSubDomains: true }))
 
-app.use(helmet.hsts({maxAge: 15*60*1000, includeSubDomains: true})) // 15 mins
-
-// blocks repeated requests to api and slow down attackers
+// --- DDOS: rate limiters + slow down ---
 app.use(generalLimiter)
 app.use('/employees/login', loginLimiter)
 app.use('/customers/login', loginLimiter)
-
 app.use(slowDown({
-  windowMs: 15 * 60 * 1000, //15 min
-  delayAfter: 10, //allow 10 requests per  then start slowign down
-  delayMs: () => 500 // too add 500 ms delay per request above limit (10)
+  windowMs: 15 * 60 * 1000,
+  delayAfter: 10,
+  delayMs: () => 500,
 }))
 
-// routes
-app.use('/employees', employeeRoutes)
-app.use('/customers', customerRoutes)
-app.use('/payments', paymentRoutes)
+// --- Routes ---
+app.use('/employees', csrf, requireDoubleSubmit, employeeRoutes)
+app.use('/customers', csrf, requireDoubleSubmit, customerRoutes)
+app.use('/payments', csrf, requireDoubleSubmit, paymentRoutes)
 
-//Test route
-app.get("/", (_, res) => {
-  res.send("🚀 HTTPS server is running securely!")
+// --- Test route ---
+app.get('/', (_, res) => {
+  res.send('🚀 HTTPS server is running securely with CSRF and Helmet!')
 })
 
-//Create HTTPS server
+// --- HTTPS server setup ---
 const server = https.createServer(
   {
-    key: fs.readFileSync("keys/privatekey.pem"),
-    cert: fs.readFileSync("keys/certificate.pem"),
-    ca: fs.readFileSync("keys/CA.pem"), //added CA just in case
+    key: fs.readFileSync('keys/privatekey.pem'),
+    cert: fs.readFileSync('keys/certificate.pem'),
+    ca: fs.readFileSync('keys/CA.pem'),
   },
   app
 )
 
-//Connecting to Mongo database
+// --- Connect DB + Start ---
 connect()
-
-//Start server
 server.listen(port, () => {
-  console.log(`Server started on PORT ${port}`)
+  console.log(`✅ Secure HTTPS server running on PORT ${port}`)
 })
 
 /*

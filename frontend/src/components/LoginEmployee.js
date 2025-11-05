@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Link } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 import DOMPurify from 'dompurify'
+import { getCSRFToken } from '../utils/csrf'
+import { API_BASE } from '../utils/api'
 
 export default function LoginEmployee() {
   const [email, setEmail] = useState('')
@@ -14,29 +15,36 @@ export default function LoginEmployee() {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    //sanitised input
     const cleanEmail = DOMPurify.sanitize(email)
 
     try {
-      const response = await axios.post('https://localhost:2000/employees/login',
-        { email: cleanEmail, password })
+      const csrfToken = getCSRFToken()
+
+      const response = await axios.post(
+        `${API_BASE}/employees/login`,
+        { email: cleanEmail, password },
+        {
+          headers: { 'x-csrf-token': csrfToken },
+          withCredentials: true,
+        }
+      )
 
       const data = response.data
 
       if (response.status === 200) {
-        setMessage(data.message)
         localStorage.setItem('token', data.token)
-        const role = data.role
-
         navigate('/employees/payments')
-
       } else {
         setMessage(data.message)
       }
     } catch (err) {
-      console.error("AXIOS ERROR:", err); // <-- ADD THIS
-      setMessage(err.response?.data?.message || 'Network error');
+      handleError(err)
     }
+  }
+
+  const handleError = (err) => {
+    console.error(err)
+    setMessage(err.response?.data?.message || 'Network error.')
   }
 
   return (

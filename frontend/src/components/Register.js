@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 import DOMPurify from 'dompurify'
+import { getCSRFToken } from '../utils/csrf'
+import { API_BASE } from '../utils/api'
 
 export default function Register() {
   const [fullName, setFullName] = useState('')
@@ -17,70 +19,60 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    //sanitised input
     const cleanFullName = DOMPurify.sanitize(fullName)
     const cleanIdNumber = DOMPurify.sanitize(idNumber)
     const cleanAccountNumber = DOMPurify.sanitize(accountNumber)
     const cleanEmail = DOMPurify.sanitize(email)
 
-    //Regex patterns for frontend validation
+    // Regex validation
     const nameRegex = /^[A-Za-z\s-]+$/
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=<>?{}[\]~]).{8,}$/
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=<>?{}[\]~]).{8,}$/
     const idRegex = /^\d{13}$/
     const accountRegex = /^\d{9,12}$/
 
-    if (!nameRegex.test(fullName)) {
-      setMessage('Names may only contain letters and hyphens.')
-      setErrorField('fullName')
-      return
-    }
-
-    if (!emailRegex.test(email)) {
-      setMessage('Invalid email format.')
-      setErrorField('email')
-      return
-    }
-
-    if (!idRegex.test(idNumber)) {
-      setMessage('Invalid ID number.')
-      setErrorField('idNumber')
-      return
-    }
-
-    if (!accountRegex.test(accountNumber)) {
-      setMessage('Valid account numbers are between 9 and 12 digits long.')
-      setErrorField('accountNumber')
-      return
-    }
-
-    if (!passwordRegex.test(password)) {
-      setMessage('Password must be a minimum of 8 characters long and include at least one uppercase letter, one lowercase letter, one digit, and one special character.')
-      setErrorField('password')
-      return
-    }
+    if (!nameRegex.test(fullName)) return setError('fullName', 'Names may only contain letters and hyphens.')
+    if (!emailRegex.test(email)) return setError('email', 'Invalid email format.')
+    if (!idRegex.test(idNumber)) return setError('idNumber', 'Invalid ID number.')
+    if (!accountRegex.test(accountNumber)) return setError('accountNumber', 'Account numbers must be 9–12 digits.')
+    if (!passwordRegex.test(password))
+      return setError('password', 'Password must meet complexity requirements.')
 
     try {
-      const response = await axios.post('https://localhost:2000/customers/register',
+      const csrfToken = getCSRFToken()
+
+      const response = await axios.post(
+        `${API_BASE}/customers/register`,
         {
           fullName: cleanFullName,
           idNumber: cleanIdNumber,
           accountNumber: cleanAccountNumber,
           email: cleanEmail,
-          password
-        })
+          password,
+        },
+        {
+          headers: { 'x-csrf-token': csrfToken },
+          withCredentials: true,
+        }
+      )
 
       navigate('/login-customer')
       console.log(response.data)
     } catch (err) {
-      if (err.response) {
-        setMessage(err.response.data.message || 'Registration failed.')
-      } else {
-        setMessage('Network error.')
-      }
-
-      console.error(err)
+      handleError(err)
     }
+  }
+
+  const setError = (field, msg) => {
+    setMessage(msg)
+    setErrorField(field)
+  }
+
+  const handleError = (err) => {
+    if (err.response) setMessage(err.response.data.message || 'Registration failed.')
+    else setMessage('Network error.')
+    console.error(err)
   }
 
   return (

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import { API_BASE } from '../utils/api'
 
 export default function PaymentsList() {
   const [payments, setPayments] = useState([])
@@ -21,7 +22,7 @@ export default function PaymentsList() {
 
   const fetchPayments = async () => {
     try {
-      let url = 'https://localhost:2000/payments'
+      let url = `${API_BASE}/payments`
       if (statusFilter) {
         url += `?status=${statusFilter}`
       }
@@ -39,7 +40,7 @@ export default function PaymentsList() {
   const updateStatus = async (id, newStatus) => {
     try {
       await axios.patch(
-        `https://localhost:2000/payments/${id}/status`,
+        `${API_BASE}/payments/${id}/status`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       )
