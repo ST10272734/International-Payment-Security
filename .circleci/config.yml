@@ -3,52 +3,41 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: cimg/node:22.0  # This should have Java 17+ but let's be explicit
+      - image: cimg/node:22.0
     steps:
       - checkout
 
-      # ---------------- BACKEND ----------------
+      # ---------------- SETUP JAVA 17 ----------------
       - run:
-          name: Install backend dependencies
+          name: Setup Java 17
           command: |
-            cd Backend
-            npm install
+            sudo apt-get update
+            sudo apt-get install -y openjdk-17-jdk
+            export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+            export PATH=$JAVA_HOME/bin:$PATH
+            java -version
 
-      - run:
-          name: Minimal backend test
-          command: |
-            cd Backend
-            echo "✅ Backend installation successful."
-
-      # ---------------- FRONTEND ----------------
-      - run:
-          name: Install frontend dependencies
-          command: |
-            cd frontend
-            npm install
-
-      - run:
-          name: Build frontend
-          command: |
-            cd frontend
-            CI=false npm run build
+      # ---------------- BACKEND & FRONTEND ----------------
+      - run: cd Backend && npm install
+      - run: cd frontend && npm install
+      - run: cd frontend && CI=false npm run build
 
       # ---------------- SONARQUBE SCAN ----------------
       - run:
-          name: Check Java version and install SonarScanner
+          name: Download and run SonarScanner
           command: |
-            # Check current Java version
-            java -version
-            # Install SonarScanner with proper Java version
-            npm install --save-dev sonarqube-scanner
-      - run:
-          name: Run SonarQube analysis
-          command: |
-            npx sonar-scanner \
+            # Download SonarScanner with embedded JRE
+            SONAR_SCANNER_VERSION="5.0.1.3006"
+            wget -q "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux.zip"
+            unzip -q "sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux.zip"
+            
+            # Run analysis using the embedded JRE
+            ./sonar-scanner-${SONAR_SCANNER_VERSION}-linux/bin/sonar-scanner \
               -Dsonar.projectKey=ST10272734_International-Payment-Security \
               -Dsonar.sources=. \
               -Dsonar.host.url=https://sonarcloud.io \
-              -Dsonar.token=$SONARCLOUD
+              -Dsonar.token=$SONARCLOUD \
+              -Dsonar.scm.disabled=true
           no_output_timeout: 30m
 
 workflows:
