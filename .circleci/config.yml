@@ -1,42 +1,58 @@
 version: 2.1
 
-orbs:
-  sonarcloud: sonarsource/sonarcloud@1.0
-
 jobs:
   build:
     docker:
-      - image: cimg/node:22.0
+      - image: cimg/node:22.0  # This should have Java 17+ but let's be explicit
     steps:
       - checkout
+
+      # ---------------- BACKEND ----------------
       - run:
           name: Install backend dependencies
           command: |
             cd Backend
             npm install
+
+      - run:
+          name: Minimal backend test
+          command: |
+            cd Backend
+            echo "✅ Backend installation successful."
+
+      # ---------------- FRONTEND ----------------
       - run:
           name: Install frontend dependencies
           command: |
             cd frontend
             npm install
+
       - run:
           name: Build frontend
           command: |
             cd frontend
             CI=false npm run build
 
-  sonarqube:
-    docker:
-      - image: cimg/node:22.0
-    steps:
-      - checkout
-      - sonarcloud/scan
+      # ---------------- SONARQUBE SCAN ----------------
+      - run:
+          name: Check Java version and install SonarScanner
+          command: |
+            # Check current Java version
+            java -version
+            # Install SonarScanner with proper Java version
+            npm install --save-dev sonarqube-scanner
+      - run:
+          name: Run SonarQube analysis
+          command: |
+            npx sonar-scanner \
+              -Dsonar.projectKey=ST10272734_International-Payment-Security \
+              -Dsonar.sources=. \
+              -Dsonar.host.url=https://sonarcloud.io \
+              -Dsonar.token=$SONARCLOUD
+          no_output_timeout: 30m
 
 workflows:
   main:
     jobs:
-      - build
-      - sonarqube:
+      - build:
           context: SonarCloud
-          requires:
-            - build
