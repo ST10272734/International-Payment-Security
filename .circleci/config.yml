@@ -1,62 +1,42 @@
 version: 2.1
 
+orbs:
+  sonarcloud: sonarsource/sonarcloud@1.0
+
 jobs:
   build:
     docker:
       - image: cimg/node:22.0
     steps:
       - checkout
-
-      # ---------------- BACKEND ----------------
       - run:
           name: Install backend dependencies
           command: |
             cd Backend
             npm install
-
-      - run:
-          name: Minimal backend test
-          command: |
-            cd Backend
-            echo "✅ Backend installation successful."
-            node -e "console.log('Backend sanity check passed')"
-
-      # ---------------- FRONTEND ----------------
       - run:
           name: Install frontend dependencies
           command: |
             cd frontend
             npm install
-
       - run:
-          name: Build frontend (ignore lint warnings)
+          name: Build frontend
           command: |
             cd frontend
             CI=false npm run build
 
-      - run:
-          name: Minimal frontend test
-          command: |
-            cd frontend
-            echo "✅ Frontend build successful."
-            node -e "console.log('Frontend sanity check passed')"
-
-      # ---------------- SONARQUBE SCAN ----------------
-      - run:
-          name: Install SonarQube Scanner locally
-          command: |
-            npm install --save-dev sonarqube-scanner
-      - run:
-          name: SonarQube scan
-          command: |
-            npx sonar-scanner \
-              -Dsonar.projectKey=ST10272734_International-Payment-Security \
-              -Dsonar.sources=. \
-              -Dsonar.host.url=https://sonarcloud.io \
-              -Dsonar.login=$SONARCLOUD
+  sonarqube:
+    docker:
+      - image: cimg/node:22.0
+    steps:
+      - checkout
+      - sonarcloud/scan
 
 workflows:
   main:
     jobs:
-      - build:
+      - build
+      - sonarqube:
           context: SonarCloud
+          requires:
+            - build
