@@ -3,10 +3,17 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { API_BASE } from '../utils/api'
 
+// Fetch CSRF token from backend
+const fetchCSRFToken = async () => {
+  const response = await axios.get(`${API_BASE}/csrf-token`, { withCredentials: true })
+  return response.data.csrfToken
+}
+
 export default function PaymentsList() {
   const [payments, setPayments] = useState([])
   const [error, setError] = useState('')
   const [statusFilter, setStatusFilter] = useState('Pending')
+  const [loading, setLoading] = useState(true)
 
   const token = localStorage.getItem('token')
   const navigate = useNavigate()
@@ -21,36 +28,54 @@ export default function PaymentsList() {
   }, [statusFilter])
 
   const fetchPayments = async () => {
+    setLoading(true)
+    setError('')
     try {
+      const csrfToken = await fetchCSRFToken()
       let url = `${API_BASE}/payments`
-      if (statusFilter) {
-        url += `?status=${statusFilter}`
-      }
+      if (statusFilter) url += `?status=${statusFilter}`
 
       const response = await axios.get(url, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'X-XSRF-TOKEN': csrfToken
+        },
+        withCredentials: true
       })
 
       setPayments(response.data)
+      setError('')
     } catch (err) {
       console.error(err)
       setError(err.response?.data?.message || 'Failed to fetch payments.')
+    } finally {
+      setLoading(false)
     }
   }
 
   const updateStatus = async (id, newStatus) => {
     try {
+      const csrfToken = await fetchCSRFToken()
+
       await axios.patch(
         `${API_BASE}/payments/${id}/status`,
         { status: newStatus },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'X-XSRF-TOKEN': csrfToken
+          },
+          withCredentials: true
+        }
       )
-      fetchPayments()
+
+      fetchPayments() // refresh list
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to update status.')
     }
   }
 
+  if (loading) return <p>Loading payments...</p>
   if (error) return <p style={{ color: 'red' }}>{error}</p>
 
   return (
