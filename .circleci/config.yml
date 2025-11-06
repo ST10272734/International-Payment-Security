@@ -47,9 +47,9 @@ jobs:
           command: |
             npm install -g sonarqube-scanner
             sonar-scanner \
-              -Dsonar.projectKey=your_project_key \
+              -Dsonar.projectKey=ST10272734_International-Payment-Security\
               -Dsonar.sources=. \
-              -Dsonar.host.url=http://<your-sonarqube-host>:9000 \
+              -Dsonar.host.url=http://st10272734:9000 \
               -Dsonar.login=$SONARCLOUD
 
 workflows:
@@ -57,5 +57,3 @@ workflows:
     jobs:
       - build:
           context: SonarCloud
-
-#test
