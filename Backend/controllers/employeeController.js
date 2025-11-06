@@ -116,7 +116,7 @@ export async function handleLoginEmployee(req, res) {
         res.cookie('authToken', token, {
             httpOnly: true,
             secure: true,
-            sameSite: 'stricy',
+            sameSite: 'strict',
             maxAge: 60*60*1000
         })
 

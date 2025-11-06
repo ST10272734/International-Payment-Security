@@ -33,6 +33,7 @@ export default function PaymentsList() {
 
       setPayments(response.data)
     } catch (err) {
+      console.error(err)
       setError(err.response?.data?.message || 'Failed to fetch payments.')
     }
   }
