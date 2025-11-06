@@ -134,6 +134,14 @@ export async function handleLoginCustomer(req, res) {
             { expiresIn: '1h' }
         )
 
+        // set token as http only cookie
+        res.cookie('authToken', token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'strict',
+            maxAge: 60*60*1000 //1hr
+        })
+
         return res.status(200).json({
             message: 'Login successful',
             token,
