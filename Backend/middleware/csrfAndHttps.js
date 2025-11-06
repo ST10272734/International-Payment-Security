@@ -84,4 +84,9 @@ Session hijacking prevention (session regeneration, expiry, SSL):
 SQL injection prevention (applied conceptually for MongoDB queries):
 4. https://planetscale.com/blog/how-to-prevent-sql-injection-attacks-in-node-js
 5. https://portswigger.net/web-security/sql-injection
+
+Extra:
+https://owasp.org/www-community/attacks/csrf
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie
+https://www.npmjs.com/package/csurf
 */
