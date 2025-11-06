@@ -1,8 +1,5 @@
 version: 2.1
 
-orbs:
-  sonarcloud: sonarsource/sonarcloud@2.0.0
-
 jobs:
   build:
     docker:
@@ -44,8 +41,16 @@ jobs:
             echo "✅ Frontend build successful."
             node -e "console.log('Frontend sanity check passed')"
 
-      # ---------------- SONARCLOUD SCAN ----------------
-      - sonarcloud/scan
+      # ---------------- SONARQUBE SCAN ----------------
+      - run:
+          name: SonarQube scan
+          command: |
+            npm install -g sonarqube-scanner
+            sonar-scanner \
+              -Dsonar.projectKey=your_project_key \
+              -Dsonar.sources=. \
+              -Dsonar.host.url=http://<your-sonarqube-host>:9000 \
+              -Dsonar.login=$SONARCLOUD
 
 workflows:
   main:
