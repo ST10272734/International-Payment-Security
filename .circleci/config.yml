@@ -43,13 +43,16 @@ jobs:
 
       # ---------------- SONARQUBE SCAN ----------------
       - run:
+          name: Install SonarQube Scanner locally
+          command: |
+            npm install --save-dev sonarqube-scanner
+      - run:
           name: SonarQube scan
           command: |
-            npm install -g sonarqube-scanner
-            sonar-scanner \
-              -Dsonar.projectKey=ST10272734_International-Payment-Security\
+            npx sonar-scanner \
+              -Dsonar.projectKey=ST10272734_International-Payment-Security \
               -Dsonar.sources=. \
-              -Dsonar.host.url=http://st10272734:9000 \
+              -Dsonar.host.url=https://sonarcloud.io \
               -Dsonar.login=$SONARCLOUD
 
 workflows:
@@ -57,4 +60,3 @@ workflows:
     jobs:
       - build:
           context: SonarCloud
- #test 
