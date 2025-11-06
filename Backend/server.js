@@ -97,8 +97,12 @@ app.use(slowDown({
 }))
 
 // --- Routes ---
-app.use('/employees', csrf, requireDoubleSubmit, employeeRoutes)
-app.use('/customers', csrf, requireDoubleSubmit, customerRoutes)
+if (process.env.NODE_ENV === 'production') {
+  app.use('/employees', csrf, requireDoubleSubmit, employeeRoutes)
+} else {
+  // dev: no CSRF, easier for Postman
+  app.use('/employees', employeeRoutes)
+}app.use('/customers', csrf, requireDoubleSubmit, customerRoutes)
 app.use('/payments', csrf, requireDoubleSubmit, paymentRoutes)
 
 // --- Test route ---
