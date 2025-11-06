@@ -19,7 +19,6 @@ jobs:
           command: |
             cd Backend
             echo "✅ Backend installation successful."
-            node -e "console.log('Backend sanity check passed')"
 
       # ---------------- FRONTEND ----------------
       - run:
@@ -29,31 +28,27 @@ jobs:
             npm install
 
       - run:
-          name: Build frontend (ignore lint warnings)
+          name: Build frontend
           command: |
             cd frontend
             CI=false npm run build
 
-      - run:
-          name: Minimal frontend test
-          command: |
-            cd frontend
-            echo "✅ Frontend build successful."
-            node -e "console.log('Frontend sanity check passed')"
-
       # ---------------- SONARQUBE SCAN ----------------
       - run:
-          name: Install SonarQube Scanner locally
+          name: Download SonarScanner
           command: |
-            npm install --save-dev sonarqube-scanner
+            SONAR_SCANNER_VERSION="5.0.1.3006"
+            wget -q "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux.zip"
+            unzip -q "sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux.zip"
       - run:
-          name: SonarQube scan
+          name: Run SonarQube analysis
           command: |
-            npx sonar-scanner \
-              -Dsonar.projectKey=ST10272734_International-Payment-Security \
-              -Dsonar.sources=. \
-              -Dsonar.host.url=https://sonarcloud.io \
-              -Dsonar.login=$SONARCLOUD
+            ./sonar-scanner-5.0.1.3006-linux/bin/sonar-scanner -Dsonar.token=$SONARCLOUD
+          no_output_timeout: 30m
+      - run:
+          name: Clean up SonarScanner
+          command: |
+            rm -rf sonar-scanner-* sonar-scanner-cli-*.zip
 
 workflows:
   main:
