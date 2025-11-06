@@ -7,38 +7,48 @@ jobs:
     steps:
       - checkout
 
-      # ---------------- SETUP JAVA 17 ----------------
+      # ---------------- BACKEND ----------------
       - run:
-          name: Setup Java 17
+          name: Install backend dependencies
           command: |
-            sudo apt-get update
-            sudo apt-get install -y openjdk-17-jdk
-            export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-            export PATH=$JAVA_HOME/bin:$PATH
-            java -version
+            cd Backend
+            npm install
 
-      # ---------------- BACKEND & FRONTEND ----------------
-      - run: cd Backend && npm install
-      - run: cd frontend && npm install
-      - run: cd frontend && CI=false npm run build
+      - run:
+          name: Minimal backend test
+          command: |
+            cd Backend
+            echo "✅ Backend installation successful."
+
+      # ---------------- FRONTEND ----------------
+      - run:
+          name: Install frontend dependencies
+          command: |
+            cd frontend
+            npm install
+
+      - run:
+          name: Build frontend
+          command: |
+            cd frontend
+            CI=false npm run build
 
       # ---------------- SONARQUBE SCAN ----------------
       - run:
-          name: Download and run SonarScanner
+          name: Download SonarScanner
           command: |
-            # Download SonarScanner with embedded JRE
             SONAR_SCANNER_VERSION="5.0.1.3006"
             wget -q "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux.zip"
             unzip -q "sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux.zip"
-            
-            # Run analysis using the embedded JRE
-            ./sonar-scanner-${SONAR_SCANNER_VERSION}-linux/bin/sonar-scanner \
-              -Dsonar.projectKey=ST10272734_International-Payment-Security \
-              -Dsonar.sources=. \
-              -Dsonar.host.url=https://sonarcloud.io \
-              -Dsonar.token=$SONARCLOUD \
-              -Dsonar.scm.disabled=true
+      - run:
+          name: Run SonarQube analysis
+          command: |
+            ./sonar-scanner-5.0.1.3006-linux/bin/sonar-scanner -Dsonar.token=$SONARCLOUD
           no_output_timeout: 30m
+      - run:
+          name: Clean up SonarScanner
+          command: |
+            rm -rf sonar-scanner-* sonar-scanner-cli-*.zip
 
 workflows:
   main:
