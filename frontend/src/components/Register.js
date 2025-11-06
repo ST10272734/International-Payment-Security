@@ -1,0 +1,319 @@
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import axios from 'axios'
+import DOMPurify from 'dompurify'
+import { getCSRFToken } from '../utils/csrf'
+import { API_BASE } from '../utils/api'
+
+export default function Register() {
+  const [fullName, setFullName] = useState('')
+  const [idNumber, setIdNumber] = useState('')
+  const [accountNumber, setAccountNumber] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [message, setMessage] = useState('')
+  const [errorField, setErrorField] = useState('')
+
+  const navigate = useNavigate()
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    const cleanFullName = DOMPurify.sanitize(fullName)
+    const cleanIdNumber = DOMPurify.sanitize(idNumber)
+    const cleanAccountNumber = DOMPurify.sanitize(accountNumber)
+    const cleanEmail = DOMPurify.sanitize(email)
+
+    // Regex validation
+    const nameRegex = /^[A-Za-z\s-]+$/
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=<>?{}[\]~]).{8,}$/
+    const idRegex = /^\d{13}$/
+    const accountRegex = /^\d{9,12}$/
+
+    if (!nameRegex.test(fullName)) return setError('fullName', 'Names may only contain letters and hyphens.')
+    if (!emailRegex.test(email)) return setError('email', 'Invalid email format.')
+    if (!idRegex.test(idNumber)) return setError('idNumber', 'Invalid ID number.')
+    if (!accountRegex.test(accountNumber)) return setError('accountNumber', 'Account numbers must be 9–12 digits.')
+    if (!passwordRegex.test(password))
+      return setError('password', 'Password must meet complexity requirements.')
+
+    try {
+      const csrfToken = getCSRFToken()
+
+      const response = await axios.post(
+        `${API_BASE}/customers/register`,
+        {
+          fullName: cleanFullName,
+          idNumber: cleanIdNumber,
+          accountNumber: cleanAccountNumber,
+          email: cleanEmail,
+          password,
+        },
+        {
+          headers: { 'x-csrf-token': csrfToken },
+          withCredentials: true,
+        }
+      )
+
+      navigate('/login-customer')
+      console.log(response.data)
+    } catch (err) {
+      handleError(err)
+    }
+  }
+
+  const setError = (field, msg) => {
+    setMessage(msg)
+    setErrorField(field)
+  }
+
+  const handleError = (err) => {
+    if (err.response) setMessage(err.response.data.message || 'Registration failed.')
+    else setMessage('Network error.')
+    console.error(err)
+  }
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        fontFamily: 'Arial, sans-serif',
+        background: 'linear-gradient(135deg, #0d1117, #161b22)',
+        color: '#f0f6fc',
+        padding: '20px',
+      }}
+    >
+      {/* Header */}
+      <h1
+        style={{
+          fontSize: '2.5rem',
+          fontWeight: 'bold',
+          color: '#f0f6fc',
+          borderBottom: '2px solid #30363d',
+          textAlign: 'center',
+          margin: 0
+        }}
+      >
+        Register
+      </h1>
+
+      <h2
+        style={{
+          marginBottom: '30px',
+          fontSize: '1rem',
+          fontWeight: '400',
+          color: '#c9d1d9',
+          textAlign: 'center',
+        }}
+      >
+        Provide the required details below.
+      </h2>
+
+      {/* Registration Form */}
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px',
+          backgroundColor: '#161b22',
+          padding: '30px',
+          borderRadius: '12px',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
+          width: '100%',
+          maxWidth: '400px',
+        }}
+      >
+        {/* Full Name */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <label style={{ marginBottom: '5px', color: '#c9d1d9', fontWeight: '500' }}>
+            Full Name
+          </label>
+          <input
+            type="text"
+            placeholder="John Doe"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            required
+            style={{
+              padding: '12px',
+              borderRadius: '8px',
+              border: '1px solid #30363d',
+              backgroundColor: '#0d1117',
+              color: '#f0f6fc',
+              fontSize: '1rem',
+            }}
+          />
+          {errorField === 'fullName' && (
+            <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+              {message}
+            </span>
+          )}
+        </div>
+
+        {/* Email */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <label style={{ marginBottom: '5px', color: '#c9d1d9', fontWeight: '500' }}>
+            Email Address
+          </label>
+          <input
+            type="email"
+            placeholder="example@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            style={{
+              padding: '12px',
+              borderRadius: '8px',
+              border: '1px solid #30363d',
+              backgroundColor: '#0d1117',
+              color: '#f0f6fc',
+              fontSize: '1rem',
+            }}
+          />
+          {errorField === 'email' && (
+            <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+              {message}
+            </span>
+          )}
+        </div>
+
+        {/* ID Number */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <label style={{ marginBottom: '5px', color: '#c9d1d9', fontWeight: '500' }}>
+            ID Number
+          </label>
+          <input
+            type="text"
+            placeholder="13-digit South African ID number"
+            value={idNumber}
+            onChange={(e) => setIdNumber(e.target.value)}
+            required
+            style={{
+              padding: '12px',
+              borderRadius: '8px',
+              border: '1px solid #30363d',
+              backgroundColor: '#0d1117',
+              color: '#f0f6fc',
+              fontSize: '1rem',
+            }}
+          />
+          {errorField === 'idNumber' && (
+            <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+              {message}
+            </span>
+          )}
+        </div>
+
+        {/* Account Number */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <label style={{ marginBottom: '5px', color: '#c9d1d9', fontWeight: '500' }}>
+            Account Number
+          </label>
+          <input
+            type="text"
+            placeholder="9-12 digit account number"
+            value={accountNumber}
+            onChange={(e) => setAccountNumber(e.target.value)}
+            required
+            style={{
+              padding: '12px',
+              borderRadius: '8px',
+              border: '1px solid #30363d',
+              backgroundColor: '#0d1117',
+              color: '#f0f6fc',
+              fontSize: '1rem',
+            }}
+          />
+          {errorField === 'accountNumber' && (
+            <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+              {message}
+            </span>
+          )}
+        </div>
+
+        {/* Password */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <label style={{ marginBottom: '5px', color: '#c9d1d9', fontWeight: '500' }}>
+            Password
+          </label>
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={{
+              padding: '12px',
+              borderRadius: '8px',
+              border: '1px solid #30363d',
+              backgroundColor: '#0d1117',
+              color: '#f0f6fc',
+              fontSize: '1rem',
+            }}
+          />
+          {errorField === 'password' && (
+            <span style={{ color: '#ff6b6b', marginTop: '5px', fontSize: '0.9rem' }}>
+              {message}
+            </span>
+          )}
+        </div>
+
+        {/* Register Button */}
+        <button
+          type="submit"
+          style={{
+            padding: '12px',
+            borderRadius: '8px',
+            border: 'none',
+            backgroundColor: '#00B7A8',
+            color: '#fff',
+            fontWeight: '600',
+            fontSize: '1rem',
+            cursor: 'pointer',
+            transition: 'background-color 0.3s ease, transform 0.2s ease',
+          }}
+          onMouseOver={(e) => (e.target.style.backgroundColor = '#00D2C0')}
+          onMouseOut={(e) => (e.target.style.backgroundColor = '#009C90')}
+        >
+          Register
+        </button>
+      </form>
+
+      {/* Login Link */}
+      <div style={{ marginTop: '20px' }}>
+        <Link
+          to="/login-customer"
+          style={{
+            color: '#58a6ff',
+            textDecoration: 'none',
+            fontWeight: '500',
+          }}
+        >
+          Already have an account? Log in now
+        </Link>
+      </div>
+
+      <div style={{ marginTop: '10px' }}>
+        <Link
+          to="/"
+          style={{
+            color: '#58a6ff',
+            textDecoration: 'none',
+            fontWeight: '500',
+          }}
+        >
+          Back to Home
+        </Link>
+      </div>
+    </div>
+  );
+
+
+}
