@@ -14,6 +14,13 @@ jobs:
             cd Backend
             npm install
 
+      # ---------------- API Testing ----------------
+      - run:
+          name: Quick Security Check
+          command: |
+            cd Backend
+            npm list helmet && echo "✅ Helmet installed" || echo "⚠️  Add: npm install helmet"
+
       - run:
           name: Minimal backend test
           command: |
@@ -33,7 +40,7 @@ jobs:
             cd frontend
             CI=false npm run build
 
-      # ---------------- SONARQUBE SCAN (SAST) ----------------
+      # ---------------- Static App Testing ----------------
       - run:
           name: Download SonarScanner
           command: |
@@ -43,7 +50,6 @@ jobs:
       - run:
           name: Run SonarQube analysis
           command: |
-            echo "🔍 Running SAST - Static Application Security Testing..."
             ./sonar-scanner-5.0.1.3006-linux/bin/sonar-scanner -Dsonar.token=$SONARCLOUD
           no_output_timeout: 30m
       - run:
@@ -51,22 +57,12 @@ jobs:
           command: |
             rm -rf sonar-scanner-* sonar-scanner-cli-*.zip
 
-      # ---------------- SCA - SOFTWARE COMPOSITION ANALYSIS ----------------
+      # ---------------- SCA ----------------
       - run:
-          name: SCA - Dependency Vulnerability Scan (Non-blocking)
+          name: Dependency Scan
           command: |
-            echo "📦 Running SCA - Software Composition Analysis..."
-            cd Backend && npm audit --audit-level moderate || echo "⚠️ Backend audit found issues"
-            cd ../frontend && npm audit --audit-level moderate || echo "⚠️ Frontend audit found issues"
-
-      # ---------------- SECURITY SUMMARY ----------------
-      - run:
-          name: Security Scan Summary
-          command: |
-            echo "🎯 SECURITY TESTING SUMMARY"
-            echo "✅ SAST - Static Application Testing: COMPLETE (SonarQube)"
-            echo "✅ SCA - Software Composition Analysis: COMPLETE (npm audit)"
-            echo "📊 View SonarQube Results: https://sonarcloud.io/dashboard?id=ST10272734_International-Payment-Security"
+            cd Backend && npm audit --audit-level moderate
+            cd ../frontend && npm audit --audit-level moderate
 
 workflows:
   main:
