@@ -97,7 +97,12 @@ app.use(slowDown({
 }))
 
 // --- Routes ---
-app.use('/employees', csrf, requireDoubleSubmit, employeeRoutes)
+if (process.env.NODE_ENV === 'production') {
+  app.use('/employees', csrf, requireDoubleSubmit, employeeRoutes)
+} else {
+  // dev: no CSRF, easier for Postman
+  app.use('/employees', employeeRoutes)
+}
 app.use('/customers', csrf, requireDoubleSubmit, customerRoutes)
 app.use('/payments', csrf, requireDoubleSubmit, paymentRoutes)
 
@@ -176,4 +181,24 @@ Mongo sanitise
 
 Helment + CSP
 2. https://apurvupadhyay.medium.com/how-to-securing-your-application-with-https-and-helmet-%EF%B8%8F-8c280dfcec64
+*/
+
+/*
+Security references used for implementing protection techniques:
+
+Clickjacking prevention (headers, CSP, and frame busting):
+1. https://dev.to/rigalpatel001/preventing-clickjacking-attacks-in-javascript-39pj
+
+Session hijacking prevention (session regeneration, expiry, SSL):
+2. https://www.descope.com/learn/post/session-hijacking
+3. https://stackoverflow.com/questions/22880/what-is-the-best-way-to-prevent-session-hijacking
+
+SQL injection prevention (applied conceptually for MongoDB queries):
+4. https://planetscale.com/blog/how-to-prevent-sql-injection-attacks-in-node-js
+5. https://portswigger.net/web-security/sql-injection
+
+Extra:
+https://owasp.org/www-community/attacks/csrf
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie
+https://www.npmjs.com/package/csurf
 */

@@ -113,6 +113,13 @@ export async function handleLoginEmployee(req, res) {
             { expiresIn: '1h' }
         )
 
+        res.cookie('authToken', token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'strict',
+            maxAge: 60*60*1000
+        })
+
         return res.status(200).json({
             message: 'Login successful',
             token,
