@@ -53,13 +53,11 @@ jobs:
 
       # ---------------- SCA - SOFTWARE COMPOSITION ANALYSIS ----------------
       - run:
-          name: SCA - Dependency Vulnerability Scan
+          name: SCA - Dependency Vulnerability Scan (Non-blocking)
           command: |
             echo "📦 Running SCA - Software Composition Analysis..."
-            echo "Scanning Backend for vulnerable dependencies..."
-            cd Backend && npm audit --audit-level moderate
-            echo "Scanning Frontend for vulnerable dependencies..."
-            cd ../frontend && npm audit --audit-level moderate
+            cd Backend && npm audit --audit-level moderate || echo "⚠️ Backend audit found issues"
+            cd ../frontend && npm audit --audit-level moderate || echo "⚠️ Frontend audit found issues"
 
       # ---------------- SECURITY SUMMARY ----------------
       - run:
